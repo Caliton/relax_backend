@@ -9,7 +9,7 @@ export class Person extends Model<Person> {
         allowNull: false,
         field: "first_name"
     })
-    FirstName: string;
+    firstName: string;
 
     @Column({
         type: DataType.STRING,
@@ -17,21 +17,21 @@ export class Person extends Model<Person> {
         allowNull: false,
         field: "last_name"
     })
-    LastName: string;
+    lastName: string;
 
     @Column({
         type: DataType.DATE,
         allowNull:false,
         field: "hiring_date"
     })
-    HiringDate: Date;
+    hiringDate: Date;
 
     @Column({
         type: DataType.DATE,
         allowNull:false,
         field: "birth_day"
     })
-    BirthDay: Date;
+    birthDay: Date;
 
     @HasOne(() => User)
     User: User;   

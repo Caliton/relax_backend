@@ -21,8 +21,8 @@ export class User extends Model<User> {
     @Column({
         type: DataType.STRING
     })
-    PersonId: string;
+    personId: string;
 
     @BelongsTo(() => Person)
-    Person: Person;
+    person: Person;
 }

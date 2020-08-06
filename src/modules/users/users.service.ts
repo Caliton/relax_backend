@@ -19,4 +19,8 @@ export class UsersService {
     async findOneById(id: number): Promise<User> {
         return await this.userRepository.findOne<User>({ where: { id } });
     }
+    
+    async UpdateUser(id: number, user: User): Promise<boolean> {
+        return await this.userRepository.update<User>(user, { where : { id }})[0] > 0;
+    }
 }
