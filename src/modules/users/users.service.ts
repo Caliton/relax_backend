@@ -9,7 +9,7 @@ export class UsersService {
     constructor(@Inject(USER_REPOSITORY) private readonly userRepository: typeof User) { }
 
     async create(user: UserDto): Promise<User> {
-        return await this.userRepository.create<User>(user);
+        return await this.userRepository.create<User>(user);    
     }
 
     async findOneByLogin(login: string): Promise<User> {
