@@ -5,7 +5,7 @@ import { User } from '../users/user.entity';
 export class Person extends Model<Person> {
     @Column({
         type: DataType.STRING,
-        unique: true,
+        unique: false,
         allowNull: false,
         field: "first_name"
     })
@@ -13,7 +13,7 @@ export class Person extends Model<Person> {
 
     @Column({
         type: DataType.STRING,
-        unique: true,
+        unique: false,
         allowNull: false,
         field: "last_name"
     })

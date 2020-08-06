@@ -19,7 +19,7 @@ export class User extends Model<User> {
 
     @ForeignKey(() => Person)
     @Column({
-        type: DataType.STRING
+        type: DataType.INTEGER
     })
     personId: string;
 
