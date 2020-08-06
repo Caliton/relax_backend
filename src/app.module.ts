@@ -1,3 +1,4 @@
+import { PersonModule } from './modules/person/person.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
@@ -8,6 +9,7 @@ import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
+    PersonModule, 
     AuthModule, 
     ConfigModule.forRoot({ isGlobal:true}),
     DatabaseModule,

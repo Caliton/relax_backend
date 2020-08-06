@@ -42,9 +42,7 @@ export class AuthService {
         const token = await this.generateToken(result);
 
         return {user:result, token}
-
     }
-    
 
     private async comparePassword(enteredPassword:string , dbPassword:string){
         const match = await bcrypt.compare(enteredPassword, dbPassword);
@@ -60,5 +58,4 @@ export class AuthService {
         const hash = await bcrypt.hash(password, 10, null);
         return hash;
     }
-
 }
