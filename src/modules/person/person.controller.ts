@@ -22,7 +22,7 @@ export class PersonController {
 
     @Get()
     @ApiResponse({status: 200})
-    async getPeople(){ //TODO: Add filter and paginations
+    async getPeople(){ //TODO: Add filter and pagination
         return await this.personService.getAll();
     }
 
@@ -37,6 +37,13 @@ export class PersonController {
     async UpdatePerson(@Param() params, @Body() person: PersonRegisterDto){
         await this.personService.Update(params.id, person)
         return {Message : `Colaborador ${params.id} atualizado` }
+    }
+
+    @Delete(':id')
+    @ApiResponse({status: 200})
+    async DeletePerson(@Param() params){
+        const result = await this.personService.Delete(params.id);
+        return {Message: `Colaborador ${params.id} removido com sucesso`};
     }
 
 }
