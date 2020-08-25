@@ -45,5 +45,4 @@ export class PersonController {
         const result = await this.personService.Delete(params.id);
         return {Message: `Colaborador ${params.id} removido com sucesso`};
     }
-
 }

@@ -7,17 +7,9 @@ export class Person extends Model<Person> {
         type: DataType.STRING,
         unique: false,
         allowNull: false,
-        field: "first_name"
+        field: "name"
     })
-    firstName: string;
-
-    @Column({
-        type: DataType.STRING,
-        unique: false,
-        allowNull: false,
-        field: "last_name"
-    })
-    lastName: string;
+    name: string;
 
     @Column({
         type: DataType.DATE,

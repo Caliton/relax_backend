@@ -27,9 +27,8 @@ export class PersonService {
             throw new BadRequestException('Colaborador não encontrado');
         }
 
-        return await this.personRepository.update<Person>(person ,{ where: {id}})[0];
+        return await this.personRepository.update<Person>(person, { where: {id}})[0];
     }
-
 
     async Delete(id: any){
         return await this.personRepository.destroy({ where: {id}})[0];
