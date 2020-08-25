@@ -19,10 +19,10 @@ export class User extends Model<User> {
 
     @ForeignKey(() => Person)
     @Column({
-        type: DataType.STRING
+        type: DataType.INTEGER
     })
-    PersonId: string;
+    personId: string;
 
     @BelongsTo(() => Person)
-    Person: Person;
+    person: Person;
 }
