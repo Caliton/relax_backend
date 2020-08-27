@@ -1,5 +1,6 @@
-import {Table, Column, Model, DataType, HasOne} from 'sequelize-typescript';
+import {Table, Column, Model, DataType, HasOne, HasMany} from 'sequelize-typescript';
 import { User } from '../users/user.entity';
+import { VacationTime } from '../vacationTime/vacationTime.entity';
 
 @Table
 export class Person extends Model<Person> {
@@ -27,5 +28,8 @@ export class Person extends Model<Person> {
 
     @HasOne(() => User)
     User: User;   
+
+    @HasMany(() => VacationTime)
+    vacations: VacationTime[]
 }
 

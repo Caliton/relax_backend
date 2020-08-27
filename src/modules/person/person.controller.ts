@@ -1,7 +1,6 @@
-import { Controller, Body, UseGuards, Post, InternalServerErrorException, Get, Put, Param, BadRequestException, Delete } from '@nestjs/common';
+import { Controller, Body, Post, InternalServerErrorException, Get, Put, Param, Delete } from '@nestjs/common';
 import { PersonRegisterDto } from './Dto/personRegister.dto';
 import { PersonService } from './person.service';
-import { CreatedAt } from 'sequelize-typescript';
 import { ApiResponse } from '@nestjs/swagger';
 
 @Controller('person')

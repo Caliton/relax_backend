@@ -14,7 +14,7 @@ export class PersonService {
     }
 
     async getAll() {
-        return await this.personRepository.findAll<Person>();       
+        return await this.personRepository.findAll<Person>();
     }
 
     async GetById(id: number) {
