@@ -4,6 +4,8 @@ import { databaseConfig } from './database.config';
 import { User } from '../../modules/users/user.entity';
 import { Person } from '../../modules/person/person.entity';
 import { VacationTime } from '../../modules/vacationTime/vacationTime.entity';
+import { VacationRequest } from '../../modules/vacationRequest/vacationRequest.entity';
+import { VacationStatus } from '../../modules/vacationRequest/entitties/vacationStatus.entity';
 
 export const databaseProviders = [{
     provide: SEQUELIZE,
@@ -23,8 +25,8 @@ export const databaseProviders = [{
            config = databaseConfig.development;
         }
         const sequelize = new Sequelize(config);
-        sequelize.addModels([User, Person, VacationTime]); //TODO: Add models here
-        await sequelize.sync();
+        sequelize.addModels([User, Person, VacationTime, VacationRequest, VacationStatus]); //TODO: Add models here
+        await sequelize.sync({alter: true});
         return sequelize;
     },
 }];

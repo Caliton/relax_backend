@@ -3,3 +3,7 @@ export class PersonRegisterDto {
     readonly hiringDate : Date;
     readonly birthDay: Date;    
 }
+
+export class BulkPersonDto {
+    readonly data: PersonRegisterDto[];
+}

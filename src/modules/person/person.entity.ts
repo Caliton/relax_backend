@@ -1,6 +1,7 @@
-import {Table, Column, Model, DataType, HasOne, HasMany} from 'sequelize-typescript';
+import {Table, Column, Model, DataType, HasOne, HasMany, BeforeCreate, AfterCreate, AfterInit, AfterFind} from 'sequelize-typescript';
 import { User } from '../users/user.entity';
 import { VacationTime } from '../vacationTime/vacationTime.entity';
+import { VacationRequest } from '../vacationRequest/vacationRequest.entity';
 
 @Table
 export class Person extends Model<Person> {
@@ -13,14 +14,14 @@ export class Person extends Model<Person> {
     name: string;
 
     @Column({
-        type: DataType.DATE,
+        type: DataType.DATEONLY,
         allowNull:false,
         field: "hiring_date"
     })
     hiringDate: Date;
 
     @Column({
-        type: DataType.DATE,
+        type: DataType.DATEONLY,
         allowNull:false,
         field: "birth_day"
     })
@@ -30,6 +31,17 @@ export class Person extends Model<Person> {
     User: User;   
 
     @HasMany(() => VacationTime)
-    vacations: VacationTime[]
-}
+    vacations: VacationTime[];
 
+    @HasMany(() => VacationRequest, 'approval_user')
+    vacationsToApproval: VacationRequest[];
+    
+    @HasMany(() => VacationRequest, 'request_user')
+    vacationsRequested: VacationRequest[];
+
+    // @BeforeCreate
+    // @AfterFind
+    // static parseDate(instance: Person) {
+    //   instance.hiringDate = new Date(instance.hiringDate.toString() + 'T00:00:00');
+    // }
+}

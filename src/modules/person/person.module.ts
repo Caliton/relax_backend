@@ -14,6 +14,6 @@ import { PassportModule } from '@nestjs/passport';
         PersonController],
     providers: [
         PersonService, ...personProviders],
-    exports: [PersonService]
+    exports: [PersonService, ...personProviders]
 })
 export class PersonModule {}

@@ -1,6 +1,5 @@
-export interface VacationTImeDto{
-    limitDate: Date;
-    vacationDate: Date;
+export interface VacationTimeDto{
+    vacationYear: string;
     daysAllowed: number;
-    personId: number;
 }
+    
