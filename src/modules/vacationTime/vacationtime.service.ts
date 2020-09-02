@@ -53,14 +53,15 @@ export class VacationTimeService {
         const customDate = new Date(vacationTimes.limitDate.toString() + 'T00:00:00');
 
         const responseObject: any = {
+            id: vacationTimes.id,
             vacationDate: vacationTimes.vacationDate,
             daysAllowed: vacationTimes.daysAllowed,
             limitDate: vacationTimes.limitDate,
-            limit6Months: new Date(customDate.getFullYear(), customDate.getMonth() + 6, customDate.getDate())
+            limit6Months: new Date(customDate.getFullYear(), customDate.getMonth() - 6, customDate.getDate())
         }
 
         if (vacationTimes.vacationsRequest) {
-            responseObject.daysEnjoyed = vacationTimes.vacationsRequest
+            responseObject.daysEnjoyed = 1 + vacationTimes.vacationsRequest
                 .filter(request => request.vacationStatusId != 3)
                 .reduce((previousValue, current) => previousValue + this.calcDiffInDays(current.finalDate, current.startDate), 0);
             responseObject.daysBalance = responseObject.daysAllowed - responseObject.daysEnjoyed;
