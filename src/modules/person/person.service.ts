@@ -14,14 +14,15 @@ export class PersonService {
         return await this.personRepository.create<Person>(person);
     }
 
-    async getAll(page: number = 1) {
-        const people = await this.personRepository.findAll<Person>({
+    async getAll() {
+        const people = await this.personRepository.findAndCountAll<Person>({
             include: [{
                 model: VacationTime,
                 as: 'vacations'
             }],
-            limit: 25,
-            offset: 25 * (page - 1)
+            order: [
+                ['name', 'ASC'],
+            ]
         });
 
         return people;
