@@ -15,7 +15,7 @@ export class PersonService {
     }
 
     async getAll() {
-        const people = await this.personRepository.findAndCountAll<Person>({
+        const people = await this.personRepository.findAll<Person>({
             include: [{
                 model: VacationTime,
                 as: 'vacations'
