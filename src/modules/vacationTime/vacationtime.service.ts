@@ -27,21 +27,21 @@ export class VacationTimeService {
         return vacationTimes.map(vacation => this.toResponseObject(vacation));
     }
 
-    public async createVacationTime(data: VacationTimeDto, personId: number) {
+    public async createVacationTime(vacationDto: VacationTimeDto, personId: number) {
         const person = await this.personRepository.findOne<Person>({ where: { id: personId } });
-        const customDate = new Date(person.hiringDate.toString() + 'T00:00:00');
+        const hiringDate = new Date(person.hiringDate.toString() + 'T00:00:00');
 
         const insertData = {
             personId: personId,
-            daysAllowed: data.daysAllowed,
-            vacationDate: new Date(parseInt(data.vacationYear), customDate.getMonth(), customDate.getDate()),
-            limitDate: new Date(parseInt(data.vacationYear) + 1, customDate.getMonth() - 1, customDate.getDate())
+            daysAllowed: vacationDto.daysAllowed,
+            vacationDate: new Date(parseInt(vacationDto.vacationYear), hiringDate.getMonth(), hiringDate.getDate()),
+            limitDate: new Date(parseInt(vacationDto.vacationYear), hiringDate.getMonth() + 23, hiringDate.getDate())
         }
         try {
             return await this.vacationTimeRepository.create<VacationTime>(insertData);
         }
         catch (ex) {
-            throw new InternalServerErrorException({ Message: "Erro ao criar período de férias! ", Exception: ex});
+            throw new InternalServerErrorException({ Message: "Erro ao criar período de férias! ", Exception: ex });
         }
     }
 
@@ -51,19 +51,21 @@ export class VacationTimeService {
 
         vacationTimes.vacationDate = new Date(vacationTimes.vacationDate.toString() + 'T00:00:00');
         const customDate = new Date(vacationTimes.limitDate.toString() + 'T00:00:00');
+        const customDateUtc = new Date(vacationTimes.limitDate.toString()).toUTCString();
 
         const responseObject: any = {
             id: vacationTimes.id,
             vacationDate: vacationTimes.vacationDate,
             daysAllowed: vacationTimes.daysAllowed,
             limitDate: vacationTimes.limitDate,
-            limit6Months: new Date(customDate.getFullYear(), customDate.getMonth() - 6, customDate.getDate())
+            limit6Months: new Date(customDate.getFullYear(), customDate.getMonth() - 6, customDate.getDate() + 1)
         }
 
         if (vacationTimes.vacationsRequest) {
-            responseObject.daysEnjoyed = 1 + vacationTimes.vacationsRequest
+            responseObject.daysEnjoyed = vacationTimes.vacationsRequest
                 .filter(request => request.vacationStatusId != 3)
                 .reduce((previousValue, current) => previousValue + this.calcDiffInDays(current.finalDate, current.startDate), 0);
+            responseObject.daysEnjoyed = responseObject.daysEnjoyed > 0 ? responseObject.daysEnjoyed + 1 : 0;
             responseObject.daysBalance = responseObject.daysAllowed - responseObject.daysEnjoyed;
         }
 
