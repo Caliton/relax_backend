@@ -3,33 +3,58 @@ import { VACATION_REQUEST_REPOSITORY } from "../../core/constants"
 import { VacationRequest } from "./vacationRequest.entity"
 import { VacationRequestDto } from "./dto/VacationRequest.dto"
 import { VacationStatus } from "./entitties/vacationStatus.entity";
+import { Person } from "../person/person.entity";
 
 @Injectable()
-export class VacationRequestService{
+export class VacationRequestService {
 
     constructor(
         @Inject(VACATION_REQUEST_REPOSITORY) private readonly vacationRequestRepository: typeof VacationRequest
-        ) { }
+    ) { }
 
     async RequestVacation(data: VacationRequestDto) {
         //TODO: Validate how many days have requested. The requested days must not bet greater than the days allowed into vacation times.
 
-        try{
+        try {
             return await this.vacationRequestRepository.create<VacationRequest>(data);
-        } catch(e){
+        } catch (e) {
             console.log(e);
         }
     }
 
 
-    async getAllRequests() : Promise<VacationRequest[]>{
-        return await this.vacationRequestRepository.findAll({
+    async getAllRequests(): Promise<VacationRequest[]> {
+        const vacationRequests = await this.vacationRequestRepository.findAll({
             include: [
                 {
-                    model: VacationStatus, 
+                    model: VacationStatus,
                     as: 'vacationStatus'
+                },
+                {
+                    model: Person,
+                    as: 'requestUser'
                 }
             ]
         });
+
+        return vacationRequests.map((x) => this.toResponseObject(x));
+    }
+
+    private toResponseObject(x: VacationRequest): any {
+        const newObject = {
+            person: x.requestUser,
+            startDate: x.startDate,
+            finalDate: x.finalDate,
+            days: this.calcDiffInDays(x.finalDate, x.startDate) + 1,
+            vacationStatus: x.vacationStatus
+        }
+        return newObject;
+    }
+
+
+    private calcDiffInDays(endDate: Date, startDate: Date): number {
+        var diff = Math.abs(new Date(endDate).getTime() - new Date(startDate).getTime());
+        var diffDays = Math.ceil(diff / (1000 * 3600 * 24));
+        return diffDays;
     }
 }
