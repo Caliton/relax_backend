@@ -42,6 +42,7 @@ export class VacationRequestService {
 
     private toResponseObject(x: VacationRequest): any {
         const newObject = {
+            id: x.id,
             person: x.requestUser,
             startDate: x.startDate,
             finalDate: x.finalDate,
