@@ -67,7 +67,7 @@ export class VacationTimeService {
                 .filter(request => request.vacationStatusId != 3)
                 .reduce((previousValue, current) => previousValue + this.calcDiffInDays(current.finalDate, current.startDate), 0);
 
-            responseObject.daysEnjoyed = responseObject.daysEnjoyed > 0 ? responseObject.daysEnjoyed + 1 : 0;
+            // responseObject.daysEnjoyed = responseObject.daysEnjoyed > 0 ? responseObject.daysEnjoyed + 1 : 0;
             responseObject.daysBalance = responseObject.daysAllowed - responseObject.daysEnjoyed;
         }
 
@@ -77,6 +77,6 @@ export class VacationTimeService {
     private calcDiffInDays(endDate: Date, startDate: Date): number {
         var diff = Math.abs(new Date(endDate).getTime() - new Date(startDate).getTime());
         var diffDays = Math.ceil(diff / (1000 * 3600 * 24));
-        return diffDays;
+        return diffDays > 0 ? diffDays + 1 : 0;
     }
 }
