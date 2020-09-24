@@ -1,30 +1,44 @@
-import { VacationRequestController } from './modules/vacationRequest/vacationrequest.controller';
 import { VacationRequestModule } from './modules/vacationRequest/vacationrequest.module';
-import { VacationTimeController } from './modules/vacationTime/vacationtime.controller';
 import { VacationTimeModule } from './modules/vacationTime/vacationtime.module';
-import { VacationTimeService } from './modules/vacationTime/vacationtime.service';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
+import { join } from 'path';
 import { PersonModule } from './modules/person/person.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './core/database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './modules/users/users.module';
+import { noCacheMiddleware } from './shared/middlewares/no-cache';
+
 
 @Module({
   imports: [
-    VacationRequestModule, 
-    VacationTimeModule, 
-    PersonModule, 
-    AuthModule, 
-    ConfigModule.forRoot({ isGlobal:true}),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      serveStaticOptions: {
+        maxAge: 0,
+      },
+    }),
+    VacationRequestModule,
+    VacationTimeModule,
+    PersonModule,
+    AuthModule,
+    ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
     UsersModule
   ],
-  controllers: [ 
-        AppController],
+  controllers: [
+    AppController],
   providers: [
-        AppService],
+    AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(noCacheMiddleware)
+      .forRoutes({ path: '/', method: RequestMethod.GET });
+  }
+
+}
