@@ -1,3 +1,8 @@
+import { VacationRequestController } from './modules/vacationRequest/vacationrequest.controller';
+import { VacationRequestModule } from './modules/vacationRequest/vacationrequest.module';
+import { VacationTimeController } from './modules/vacationTime/vacationtime.controller';
+import { VacationTimeModule } from './modules/vacationTime/vacationtime.module';
+import { VacationTimeService } from './modules/vacationTime/vacationtime.service';
 import { PersonModule } from './modules/person/person.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { Module } from '@nestjs/common';
@@ -9,13 +14,17 @@ import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
+    VacationRequestModule, 
+    VacationTimeModule, 
     PersonModule, 
     AuthModule, 
     ConfigModule.forRoot({ isGlobal:true}),
     DatabaseModule,
     UsersModule
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [ 
+        AppController],
+  providers: [
+        AppService],
 })
 export class AppModule {}
