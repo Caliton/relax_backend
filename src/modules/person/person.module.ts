@@ -1,14 +1,18 @@
 import { PersonController } from './person.controller';
 import { PersonService } from './person.service';
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { personProviders } from './person.provider';
 import { UsersModule } from '../users/users.module';
 import { PassportModule } from '@nestjs/passport';
+import { VacationTimeService } from '../vacationTime/vacationtime.service';
+import { vacationTimeProviders } from '../vacationTime/vacationTime.providers';
+import { VacationTimeModule } from '../vacationTime/vacationtime.module';
 
 @Module({
     imports: [
         UsersModule,
         PassportModule,
+        forwardRef(() => VacationTimeModule)
     ],
     controllers: [
         PersonController],
@@ -16,4 +20,4 @@ import { PassportModule } from '@nestjs/passport';
         PersonService, ...personProviders],
     exports: [PersonService, ...personProviders]
 })
-export class PersonModule {}
+export class PersonModule { }

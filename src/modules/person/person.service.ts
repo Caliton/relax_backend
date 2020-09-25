@@ -3,11 +3,13 @@ import { PERSON_REPOSITORY } from '../../core/constants';
 import { Person } from './person.entity';
 import { PersonRegisterDto } from './Dto/personRegister.dto';
 import { VacationTime } from '../vacationTime/vacationTime.entity';
+import { VacationTimeService } from '../vacationTime/vacationtime.service';
 
 @Injectable()
 export class PersonService {
     constructor(
-        @Inject(PERSON_REPOSITORY) private readonly personRepository: typeof Person
+        @Inject(PERSON_REPOSITORY) private readonly personRepository: typeof Person,
+        private readonly vacationService: VacationTimeService,
     ) { }
 
     async create(person: PersonRegisterDto) {
@@ -25,7 +27,35 @@ export class PersonService {
             ]
         });
 
-        return people;
+        return Promise.all(people.map(people => this.toResponseObject(people)));
+    }
+
+
+    private async toResponseObject(person: Person) {
+        const responseObject: any = {
+            id: person.id,
+            name: person.name,
+            hiringDate: person.hiringDate,
+            birthDay: person.birthDay,
+            vacations: person.vacations
+        }
+
+        if (person.vacations.length > 0) {
+            console.log(person.name)
+            // person.status = this.
+            let a = [];
+            a = await this.vacationService.getVacationTimeByPerson(person.id);
+            let test = a.filter(a => a.daysEnjoyed < 30)
+            if (test[0]) {
+                responseObject.vacationNew = test
+            }
+            else {
+                responseObject.vacationNew = []
+            }
+        }
+        // console.log(responseObject)
+
+        return responseObject;
     }
 
     async GetById(id: number) {

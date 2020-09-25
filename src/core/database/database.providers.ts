@@ -8,25 +8,25 @@ import { VacationRequest } from '../../modules/vacationRequest/vacationRequest.e
 import { VacationStatus } from '../../modules/vacationRequest/entitties/vacationStatus.entity';
 
 export const databaseProviders = [{
-    provide: SEQUELIZE,
-    useFactory: async () => {
-        let config;
-        switch (process.env.NODE_ENV) {
-        case DEVELOPMENT:
-           config = databaseConfig.development;
-           break;
-        case TEST:
-           config = databaseConfig.test;
-           break;
-        case PRODUCTION:
-           config = databaseConfig.production;
-           break;
-        default:
-           config = databaseConfig.development;
-        }
-        const sequelize = new Sequelize(config);
-        sequelize.addModels([User, Person, VacationTime, VacationRequest, VacationStatus]); //TODO: Add models here
-        await sequelize.sync({alter: true});
-        return sequelize;
-    },
+   provide: SEQUELIZE,
+   useFactory: async () => {
+      let config;
+      switch (process.env.NODE_ENV) {
+         case DEVELOPMENT:
+            config = databaseConfig.development;
+            break;
+         case TEST:
+            config = databaseConfig.test;
+            break;
+         case PRODUCTION:
+            config = databaseConfig.production;
+            break;
+         default:
+            config = databaseConfig.development;
+      }
+      const sequelize = new Sequelize(config);
+      sequelize.addModels([User, Person, VacationTime, VacationRequest, VacationStatus]); //TODO: Add models here
+      await sequelize.sync();
+      return sequelize;
+   },
 }];
