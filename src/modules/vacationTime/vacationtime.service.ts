@@ -20,7 +20,10 @@ export class VacationTimeService {
             }],
             where: {
                 personId: personid
-            }
+            },
+            order: [
+                ['vacation_date', 'ASC'],
+            ]
         },
         );
 
@@ -69,6 +72,10 @@ export class VacationTimeService {
 
             // responseObject.daysEnjoyed = responseObject.daysEnjoyed > 0 ? responseObject.daysEnjoyed + 1 : 0;
             responseObject.daysBalance = responseObject.daysAllowed - responseObject.daysEnjoyed;
+        }
+        else {
+            responseObject.daysEnjoyed = 0;
+            responseObject.daysBalance = 30;
         }
 
         return responseObject;

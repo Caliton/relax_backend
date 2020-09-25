@@ -8,5 +8,6 @@ import { PersonModule } from '../person/person.module';
     providers: [VacationTimeService, ...vacationTimeProviders],
     imports: [PersonModule],
     controllers: [VacationTimeController],
+    exports: [VacationTimeService, ...vacationTimeProviders]
 })
-export class VacationTimeModule {}
+export class VacationTimeModule { }
