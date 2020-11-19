@@ -42,7 +42,7 @@ export class PersonService {
 
         if (person.vacations.length > 0) {
             console.log(person.name)
-            // person.status = this.
+
             let a = [];
             a = await this.vacationService.getVacationTimeByPerson(person.id);
             let test = a.filter(a => a.daysEnjoyed < 30)
@@ -53,7 +53,6 @@ export class PersonService {
                 responseObject.vacationNew = []
             }
         }
-        // console.log(responseObject)
 
         return responseObject;
     }
