@@ -32,7 +32,7 @@ export class VacationTimeService {
 
     public async createVacationTime(vacationDto: VacationTimeDto, personId: number) {
         const person = await this.personRepository.findOne<Person>({ where: { id: personId } });
-        const hiringDate = new Date(person.hiringDate.toString() + 'T00:00:00');
+        const hiringDate = new Date(person.hiringDate.toString());
 
         const insertData = {
             personId: personId,
@@ -52,8 +52,8 @@ export class VacationTimeService {
     private toResponseObject(vacationTimes: VacationTime) {
         //TODO: Pensar em um maneira melhor de obter a data corretamente
 
-        vacationTimes.vacationDate = new Date(vacationTimes.vacationDate.toString() + 'T00:00:00');
-        const limit6Months = new Date(vacationTimes.limitDate.toString() + 'T00:00:00');
+        vacationTimes.vacationDate = new Date(vacationTimes.vacationDate.toString());
+        const limit6Months = new Date(vacationTimes.limitDate.toString());
         limit6Months.setDate(limit6Months.getDate() - 180)
 
 

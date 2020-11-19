@@ -4,6 +4,15 @@ import { VacationRequest } from "./vacationRequest.entity"
 import { VacationRequestDto } from "./dto/VacationRequest.dto"
 import { VacationStatus } from "./entitties/vacationStatus.entity";
 import { Person } from "../person/person.entity";
+import dayjs = require("dayjs");
+import { BadRequestException } from "@nestjs/common/exceptions/bad-request.exception";
+import { ValidationHandler } from "./validations/vacationRequest.interface";
+import { BasicValidations } from "./validations/basicValidations";
+import { LawValidations } from "./validations/lawValidations";
+import { HolidaysRelax } from "./calendar/holidays";
+
+
+var Holidays = require('date-holidays')
 
 @Injectable()
 export class VacationRequestService {
@@ -14,6 +23,22 @@ export class VacationRequestService {
 
     async RequestVacation(data: VacationRequestDto) {
         //TODO: Validate how many days have requested. The requested days must not bet greater than the days allowed into vacation times.
+
+        // var hd = new Holidays();
+        // hd.init('BR', 'MG');
+        // console.log(hd.getHolidays(2020).filter(x => x.type == 'public'));
+
+        const handler = new BasicValidations(this.vacationRequestRepository);
+        handler.setNext(new LawValidations());
+        var errors = new Array<String>();
+
+
+        // console.log(x.getHolidays());
+        if (!handler.handle(data, errors)) {
+            throw new BadRequestException({
+                error: errors
+            });
+        }
 
         try {
             return await this.vacationRequestRepository.create<VacationRequest>(data);
