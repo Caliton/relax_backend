@@ -10,9 +10,7 @@ import { ValidationHandler } from "./vacationRequest.interface";
  */
 export class LawValidations extends ValidationHandler {
 
-    public handle(request: VacationRequestDto, errors: Array<String>): Boolean {
-        console.log("Initialize LawValidation");
-
+    public async handle(request: VacationRequestDto, errors: Array<String>): Promise<boolean> {
         var twoDaysAfterStartDate = dayjs(request.startDate).add(2, 'day');
         var oneDayAfterStartDate = dayjs(request.startDate).add(1, 'day');
 

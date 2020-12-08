@@ -19,16 +19,20 @@ export class VacationRequestService {
         @Inject(VACATION_REQUEST_REPOSITORY) private readonly vacationRequestRepository: typeof VacationRequest
     ) { }
 
-    async RequestVacation(data: VacationRequestDto) {
+    async RequestVacation(data: VacationRequestDto): Promise<VacationRequest> {
         const handler = new BasicValidations(this.vacationRequestRepository);
         handler.setNext(new LawValidations());
         var errors = new Array<String>();
 
-        if (!handler.handle(data, errors)) {
+        const validations = await handler.handle(data, errors);
+
+        if (!validations) {
             throw new BadRequestException({
                 error: errors
             });
         }
+
+        console.log("chegou até aqui")
 
         try {
             return await this.vacationRequestRepository.create<VacationRequest>(data);

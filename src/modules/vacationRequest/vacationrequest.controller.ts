@@ -4,6 +4,7 @@ import { ApiResponse } from '@nestjs/swagger';
 import { VacationRequestDto } from './dto/VacationRequest.dto';
 import * as dayjs from 'dayjs'
 import { BadRequestException } from '@nestjs/common/exceptions/bad-request.exception';
+import { VacationRequest } from './vacationRequest.entity';
 
 
 @Controller('requests')
@@ -13,7 +14,7 @@ export class VacationRequestController {
 
     @Post()
     @ApiResponse({ status: 201, description: 'Solicitação realizada com sucesso!.' })
-    async createVacationRequest(@Body() data: VacationRequestDto) {
+    async createVacationRequest(@Body() data: VacationRequestDto): Promise<VacationRequest> {
 
         return this.vacationRequestService.RequestVacation(data);
     }
