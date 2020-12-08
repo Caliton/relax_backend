@@ -30,11 +30,13 @@ export class VacationRequestController {
     }
 
     @Delete(':id')
+    @ApiResponse({ status: 200 })
     async deleteRequest(@Param('id') vacationRequestId) {
         return this.vacationRequestService.deleteRequest(vacationRequestId);
     }
 
     @Put(':id')
+    @ApiResponse({ status: 200 })
     async udpateRequest(@Param('id') requestToUpdateId, @Body() data: VacationRequestDto) {
         return this.vacationRequestService.updateRequest(requestToUpdateId, data);
     }
