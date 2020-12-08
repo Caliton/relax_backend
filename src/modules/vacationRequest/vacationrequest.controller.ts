@@ -1,4 +1,4 @@
-import { Controller, Post, Body, ValidationPipe, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, ValidationPipe, Get, Param, Delete, Put } from '@nestjs/common';
 import { VacationRequestService } from './vacationRequest.service';
 import { ApiResponse } from '@nestjs/swagger';
 import { VacationRequestDto } from './dto/VacationRequest.dto';
@@ -26,5 +26,15 @@ export class VacationRequestController {
     @Get('person/:personid/vacationtime/:id')
     async getVacationsAccordingByUser(@Param('personid') personId, @Param('id') vacationTimeId) {
         return this.vacationRequestService.getVacationsAccordingUser(personId, vacationTimeId);
+    }
+
+    @Delete(':id')
+    async deleteRequest(@Param('id') vacationRequestId) {
+        return this.vacationRequestService.deleteRequest(vacationRequestId);
+    }
+
+    @Put('id')
+    async udpateRequest(@Param('id') requestToUpdateId, @Body() data: VacationRequestDto) {
+        return this.vacationRequestService.updateRequest(requestToUpdateId, data);
     }
 }
