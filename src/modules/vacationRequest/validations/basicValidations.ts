@@ -38,7 +38,7 @@ export class BasicValidations extends ValidationHandler {
             errors.push('Erro! Você deve solicitar pelo menos 10 dias de férias!');
         }
 
-        // if (this.getDaysEnjoyed(request)> 0 )
+        this.getDaysEnjoyed(request.vacationTimeId).then((value) => { if (!value) { errors.push("Erro! Você não pode solicitar mais de 30 dias de férias!") } })
 
         return errors.length == 0;
     }
@@ -48,7 +48,7 @@ export class BasicValidations extends ValidationHandler {
             {
                 where:
                 {
-                    vacatiomTimeId: vacationTime
+                    vacationTimeId: vacationTime
                 }
             }
         );
