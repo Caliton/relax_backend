@@ -19,19 +19,23 @@ export class VacationRequestService {
         @Inject(VACATION_REQUEST_REPOSITORY) private readonly vacationRequestRepository: typeof VacationRequest
     ) { }
 
-    async RequestVacation(data: VacationRequestDto): Promise<VacationRequest> {
+    async validateRequest(data: VacationRequestDto, id: string = '') {
         const handler = new BasicValidations(this.vacationRequestRepository);
         handler.setNext(new LawValidations());
         var errors = new Array<String>();
 
-        const validations = await handler.handle(data, errors);
+        const validations = await handler.handle(data, id, errors);
 
         if (!validations) {
             throw new BadRequestException({
                 error: errors
             });
         }
+    }
 
+    async RequestVacation(data: VacationRequestDto): Promise<VacationRequest> {
+
+        await this.validateRequest(data);
         console.log("chegou até aqui")
 
         try {
@@ -99,6 +103,8 @@ export class VacationRequestService {
     }
 
     async updateRequest(requestToUpdate: string, data: VacationRequestDto) {
+
+        await this.validateRequest(data, requestToUpdate);
         const request = await this.vacationRequestRepository.findOne({ where: { id: requestToUpdate } });
 
         if (request == null) {

@@ -1,4 +1,5 @@
 import dayjs = require("dayjs");
+import { Op } from "sequelize";
 import { VacationRequestDto } from "../dto/VacationRequest.dto";
 import { VacationRequest } from "../vacationRequest.entity";
 import { ValidationHandler } from "./vacationRequest.interface";
@@ -14,19 +15,19 @@ export class BasicValidations extends ValidationHandler {
         super();
     }
 
-    public async handle(request: VacationRequestDto, errors: Array<String>): Promise<boolean> {
+    public async handle(request: VacationRequestDto, id: string, errors: Array<String>): Promise<boolean> {
 
-        const success = await this.performDaysValidation(request, errors);
+        const success = await this.performDaysValidation(request, id, errors);
 
         console.log(errors);
         if (!success) {
             return false;
         }
 
-        return super.handle(request, errors);
+        return super.handle(request, id, errors);
     }
 
-    private async performDaysValidation(request: VacationRequestDto, errors: Array<String>): Promise<boolean> {
+    private async performDaysValidation(request: VacationRequestDto, id: string, errors: Array<String>): Promise<boolean> {
         //TODO: Não pode começar férias no passado neh?
         var diffMiliSec = dayjs(request.finalDate).diff(dayjs(request.startDate));
         var diffInDays = (diffMiliSec / (1000 * 60 * 60 * 24) + 1);
@@ -39,7 +40,7 @@ export class BasicValidations extends ValidationHandler {
             errors.push('Erro! Você deve solicitar pelo menos 10 dias de férias!');
         }
 
-        const daysEnjoyed = await this.getDaysEnjoyed(request.vacationTimeId);
+        const daysEnjoyed = await this.getDaysEnjoyed(request.vacationTimeId, id);
 
         if (daysEnjoyed + diffInDays >= 30) {
             errors.push("Erro! Você não pode solicitar mais de 30 dias de férias!")
@@ -48,12 +49,15 @@ export class BasicValidations extends ValidationHandler {
         return errors.length == 0;
     }
 
-    private async getDaysEnjoyed(vacationTime: number): Promise<number> {
+    private async getDaysEnjoyed(vacationTime: number, id: string): Promise<number> {
         const requests = await this.vacationRequestRepository.findAll(
             {
                 where:
                 {
-                    vacationTimeId: vacationTime
+                    vacationTimeId: vacationTime,
+                    id: {
+                        [Op.ne]: id,
+                    }
                 }
             }
         );

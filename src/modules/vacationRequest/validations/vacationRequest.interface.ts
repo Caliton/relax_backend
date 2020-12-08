@@ -10,9 +10,9 @@ export abstract class ValidationHandler {
         return handler;
     }
 
-    public async handle(request: VacationRequestDto, errors: Array<String>): Promise<boolean> {
+    public async handle(request: VacationRequestDto, id: string, errors: Array<String>): Promise<boolean> {
         if (this.nextHandler) {
-            return this.nextHandler.handle(request, errors);
+            return this.nextHandler.handle(request, id, errors);
         }
 
         if (errors.length != 0) {
