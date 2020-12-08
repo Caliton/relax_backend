@@ -4,6 +4,8 @@ import { Person } from './person.entity';
 import { PersonRegisterDto } from './Dto/personRegister.dto';
 import { VacationTime } from '../vacationTime/vacationTime.entity';
 import { VacationTimeService } from '../vacationTime/vacationtime.service';
+import sequelize = require('sequelize');
+import { Op } from 'sequelize';
 
 @Injectable()
 export class PersonService {
@@ -16,8 +18,14 @@ export class PersonService {
         return await this.personRepository.create<Person>(person);
     }
 
-    async getAll() {
+    async getAll(filter: string) {
         const people = await this.personRepository.findAll<Person>({
+            where: sequelize.where(
+                sequelize.fn('lower', sequelize.col('name')),
+                {
+                    [Op.like]: `%${filter}%`
+                }
+            ),
             include: [{
                 model: VacationTime,
                 as: 'vacations'

@@ -4,12 +4,10 @@ import { VacationRequest } from "./vacationRequest.entity"
 import { VacationRequestDto } from "./dto/VacationRequest.dto"
 import { VacationStatus } from "./entitties/vacationStatus.entity";
 import { Person } from "../person/person.entity";
-import dayjs = require("dayjs");
 import { BadRequestException } from "@nestjs/common/exceptions/bad-request.exception";
-import { ValidationHandler } from "./validations/vacationRequest.interface";
 import { BasicValidations } from "./validations/basicValidations";
 import { LawValidations } from "./validations/lawValidations";
-import { HolidaysRelax } from "./calendar/holidays";
+import dayjs = require("dayjs");
 
 
 var Holidays = require('date-holidays')
@@ -21,24 +19,24 @@ export class VacationRequestService {
         @Inject(VACATION_REQUEST_REPOSITORY) private readonly vacationRequestRepository: typeof VacationRequest
     ) { }
 
-    async RequestVacation(data: VacationRequestDto) {
-        //TODO: Validate how many days have requested. The requested days must not bet greater than the days allowed into vacation times.
-
-        // var hd = new Holidays();
-        // hd.init('BR', 'MG');
-        // console.log(hd.getHolidays(2020).filter(x => x.type == 'public'));
-
+    async validateRequest(data: VacationRequestDto, id: string = '') {
         const handler = new BasicValidations(this.vacationRequestRepository);
         handler.setNext(new LawValidations());
         var errors = new Array<String>();
 
+        const validations = await handler.handle(data, id, errors);
 
-        // console.log(x.getHolidays());
-        if (!handler.handle(data, errors)) {
+        if (!validations) {
             throw new BadRequestException({
                 error: errors
             });
         }
+    }
+
+    async RequestVacation(data: VacationRequestDto): Promise<VacationRequest> {
+
+        await this.validateRequest(data);
+        console.log("chegou até aqui")
 
         try {
             return await this.vacationRequestRepository.create<VacationRequest>(data);
@@ -46,7 +44,6 @@ export class VacationRequestService {
             console.log(e);
         }
     }
-
 
     async getAllRequests(): Promise<VacationRequest[]> {
         const vacationRequests = await this.vacationRequestRepository.findAll({
@@ -77,10 +74,47 @@ export class VacationRequestService {
         return newObject;
     }
 
-
     private calcDiffInDays(endDate: Date, startDate: Date): number {
         var diff = Math.abs(new Date(endDate).getTime() - new Date(startDate).getTime());
         var diffDays = Math.ceil(diff / (1000 * 3600 * 24));
         return diffDays;
+    }
+
+    async getVacationsAccordingUser(personId: string, vacationTimeid: string) {
+
+        const vacations = await this.vacationRequestRepository.findAll({
+            include: [
+                {
+                    model: VacationStatus,
+                    as: 'vacationStatus'
+                },
+                {
+                    model: Person,
+                    as: 'requestUser'
+                },
+            ],
+            where: {
+                requestUserId: personId,
+                vacationTimeId: vacationTimeid
+            }
+        });
+
+        return vacations.map((x) => this.toResponseObject(x));
+    }
+
+    async updateRequest(requestToUpdate: string, data: VacationRequestDto) {
+
+        await this.validateRequest(data, requestToUpdate);
+        const request = await this.vacationRequestRepository.findOne({ where: { id: requestToUpdate } });
+
+        if (request == null) {
+            throw new BadRequestException('Solicitação não encontrada!');
+        }
+
+        return await this.vacationRequestRepository.update<VacationRequest>(data, { where: { id: requestToUpdate } });
+    }
+
+    async deleteRequest(vacationRequestId: string) {
+        return this.vacationRequestRepository.destroy({ where: { id: vacationRequestId } })[0];
     }
 }
