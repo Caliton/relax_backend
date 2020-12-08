@@ -32,8 +32,6 @@ export class VacationRequestService {
         handler.setNext(new LawValidations());
         var errors = new Array<String>();
 
-
-        // console.log(x.getHolidays());
         if (!handler.handle(data, errors)) {
             throw new BadRequestException({
                 error: errors
@@ -82,5 +80,27 @@ export class VacationRequestService {
         var diff = Math.abs(new Date(endDate).getTime() - new Date(startDate).getTime());
         var diffDays = Math.ceil(diff / (1000 * 3600 * 24));
         return diffDays;
+    }
+
+    async getVacationsAccordingUser(personId: string, vacationTimeid) {
+
+        const vacations = await this.vacationRequestRepository.findAll({
+            include: [
+                {
+                    model: VacationStatus,
+                    as: 'vacationStatus'
+                },
+                {
+                    model: Person,
+                    as: 'requestUser'
+                },
+            ],
+            where: {
+                requestUserId: personId,
+                vacationTimeId: vacationTimeid
+            }
+        });
+
+        return vacations.map((x) => this.toResponseObject(x));
     }
 }
