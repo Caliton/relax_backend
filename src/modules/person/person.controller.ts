@@ -33,10 +33,13 @@ export class PersonController {
 
     @Get()
     @ApiResponse({ status: 200 })
-    async getPeople(@Query('page') page: number) { //TODO: Add filter and pagination
+    async getPeople(@Query('filter') filter: string) { //TODO: Add filter and pagination
         try {
+            if (!filter) {
+                filter = '';
+            }
 
-            let data = await this.personService.getAll();
+            let data = await this.personService.getAll(filter);
             return data;
         } catch (ex) {
             console.log(ex);
