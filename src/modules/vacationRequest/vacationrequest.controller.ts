@@ -34,7 +34,7 @@ export class VacationRequestController {
         return this.vacationRequestService.deleteRequest(vacationRequestId);
     }
 
-    @Put('id')
+    @Put(':id')
     async udpateRequest(@Param('id') requestToUpdateId, @Body() data: VacationRequestDto) {
         return this.vacationRequestService.updateRequest(requestToUpdateId, data);
     }
