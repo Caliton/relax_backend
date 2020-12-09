@@ -21,7 +21,7 @@ export class PersonController {
 
     @Post('bulk')
     @ApiResponse({ status: 201, description: 'Usuário cadastrado com sucesso!.' })
-    async crateMany(@Body() people: BulkPersonDto) {
+    async createMany(@Body() people: BulkPersonDto) {
         const response = await this.personService.CreateManyPeople(people.data);
         if (response != null) {
             return { message: "Colaborador cadastrado com sucesso!" }
