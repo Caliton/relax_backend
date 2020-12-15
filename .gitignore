@@ -1,7 +1,7 @@
 # compiled output
 
 /node_modules
-/.env
+
 # Logs
 logs
 *.log
@@ -66,3 +66,4 @@ $RECYCLE.BIN/
 .DS_Store
 Thumbs.db
 UserInterfaceState.xcuserstate
+.env
