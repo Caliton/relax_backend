@@ -14,6 +14,13 @@ export class Person extends Model<Person> {
     name: string;
 
     @Column({
+        type: DataType.STRING,
+        allowNull:false,
+        field: "registration"
+    })
+    registration: string;
+
+    @Column({
         type: DataType.DATEONLY,
         allowNull:false,
         field: "hiring_date"

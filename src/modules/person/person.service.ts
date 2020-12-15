@@ -44,13 +44,12 @@ export class PersonService {
             id: person.id,
             name: person.name,
             hiringDate: person.hiringDate,
+            registration: person.registration,
             birthDay: person.birthDay,
             vacations: person.vacations
         }
 
         if (person.vacations.length > 0) {
-            console.log(person.name)
-
             let a = [];
             a = await this.vacationService.getVacationTimeByPerson(person.id);
             let test = a.filter(a => a.daysEnjoyed < 30)
