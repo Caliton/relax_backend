@@ -48,6 +48,13 @@ export class VacationTimeService {
         }
     }
 
+    public async deleteVacationTime(id: any) {
+        try {
+            await this.vacationTimeRepository.destroy({ where: { id } });
+        } catch (e) {
+            throw new InternalServerErrorException({ message: "Problemas ao excluir período de férias!"})
+        }
+    }
 
     private toResponseObject(vacationTimes: VacationTime) {
         //TODO: Pensar em um maneira melhor de obter a data corretamente
