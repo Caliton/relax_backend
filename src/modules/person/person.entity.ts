@@ -15,6 +15,7 @@ export class Person extends Model<Person> {
 
     @Column({
         type: DataType.STRING,
+        unique: true,
         allowNull:false,
         field: "registration"
     })
