@@ -22,11 +22,16 @@ export class PersonController {
     @Post('bulk')
     @ApiResponse({ status: 201, description: 'Usuário cadastrado com sucesso!.' })
     async createMany(@Body() people: BulkPersonDto) {
-        const response = await this.personService.CreateManyPeople(people.data);
-        if (response != null) {
-            return { message: "Colaborador cadastrado com sucesso!" }
-        }
-        else {
+        try {
+            const response = await this.personService.CreateManyPeople(people.data);
+
+            if (response.length === 0) {
+                return { message: "Os colaboradores desta lista já encontram-se cadastrados!" }
+            } else {
+                return { message: `${response.length} ${response.length === 1? 'Colaborador cadastrado': 'Colaboradores cadastrados'}`}
+            }
+
+        } catch (e) {
             throw new InternalServerErrorException('Erro ao inserir usuário!');
         }
     }

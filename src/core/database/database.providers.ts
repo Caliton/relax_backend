@@ -12,13 +12,13 @@ export const databaseProviders = [{
    useFactory: async () => {
       let config;
       switch (process.env.NODE_ENV) {
-         case DEVELOPMENT:
+         case 'DEVELOPMENT':
             config = databaseConfig.development;
             break;
-         case TEST:
+         case 'TEST':
             config = databaseConfig.test;
             break;
-         case PRODUCTION:
+         case 'PRODUCTION':
             config = databaseConfig.production;
             break;
          default:

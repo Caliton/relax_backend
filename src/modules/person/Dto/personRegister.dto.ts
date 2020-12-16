@@ -1,5 +1,6 @@
 export class PersonRegisterDto {
     readonly name: string;
+    readonly registration: string;
     readonly hiringDate : Date;
     readonly birthDay: Date;    
 }

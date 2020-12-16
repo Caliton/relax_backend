@@ -81,9 +81,25 @@ export class PersonService {
         return await this.personRepository.destroy({ where: { id } })[0];
     }
 
-    async CreateManyPeople(data: PersonRegisterDto[]) {
+
+    async CreateManyPeople(persons: PersonRegisterDto[]) {
         try {
-            return await this.personRepository.bulkCreate<Person>(data);
+            const personsDatabase = await this.getAll('');
+
+            const personsJaContem = persons.filter(x => personsDatabase.some(y => y.registration === x.registration));
+            
+            const newPersons: PersonRegisterDto[] = [];
+
+            let isOldPerson = false;
+
+            persons.forEach(a => {
+                isOldPerson = personsJaContem.some((b) => { return a.registration === b.registration })
+                if(!isOldPerson) {
+                    newPersons.push(a)
+                }
+            })
+
+            return await this.personRepository.bulkCreate<Person>(newPersons);
         } catch (ex) {
             console.error(ex)
             throw new InternalServerErrorException(ex);
