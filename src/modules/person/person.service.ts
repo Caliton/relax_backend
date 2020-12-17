@@ -87,7 +87,7 @@ export class PersonService {
             const personsDatabase = await this.getAll('');
 
             const personsJaContem = persons.filter(x => personsDatabase.some(y => y.registration === x.registration));
-            
+
             const newPersons: PersonRegisterDto[] = [];
 
             let isOldPerson = false;
@@ -103,7 +103,6 @@ export class PersonService {
         } catch (ex) {
             console.error(ex)
             throw new InternalServerErrorException(ex);
-
         }
     }
 }
