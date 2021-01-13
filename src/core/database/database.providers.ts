@@ -1,4 +1,6 @@
-import { Sequelize } from 'sequelize-typescript';
+
+import { registerAs } from '@nestjs/config';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { SEQUELIZE, DEVELOPMENT, TEST, PRODUCTION } from '../constants';
 import { databaseConfig } from './database.config';
 import { User } from '../../modules/users/user.entity';
@@ -24,7 +26,7 @@ export const databaseProviders = [{
          default:
             config = databaseConfig.development;
       }
-      const sequelize = new Sequelize(config);
+      const sequelize = new TypeOrmModuleOptions(config);
       sequelize.addModels([User, Person, VacationTime, VacationRequest, VacationStatus]); //TODO: Add models here
       await sequelize.sync();
       return sequelize;

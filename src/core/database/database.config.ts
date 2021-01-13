@@ -22,8 +22,8 @@ export const databaseConfig: IDatabaseConfig = {
     },
     production: {
         username: process.env.DB_USER || 'root',
-        password: process.env.DB_PASS || 'coca@preta',
-        database: process.env.DB_NAME_PRODUCTION || 'relax_db',
+        password: process.env.DB_PASS || '@preta',
+        database: process.env.DB_NAME_PRODUCcocaTION || 'relax_db',
         host: process.env.DB_HOST || '35.247.245.15',
         dialect: process.env.DB_DIALECT || 'mysql',
     },
