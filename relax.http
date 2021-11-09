@@ -1,0 +1,85 @@
+###
+GET http://localhost:3000/api/collaborator/2021
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###
+POST http://localhost:3000/api/login
+Content-Type: application/json
+
+{
+    "login": "caliton",
+    "password": "123"
+}
+
+###
+GET http://localhost:3000/api/test-auth
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjkzMzkwMTcxLWM5NDYtNGZmYy1hYjM4LTRkZTcyY2Y4MDhjNiIsIm5hbWUiOiJDYWxpdG9uIiwidXNlcm5hbWUiOiJjYWxpdG9uIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNjM2MDU0Nzk2LCJleHAiOjE2MzYwNTQ4MjZ9.5doTleHHmSg2cSy0iB3B_jbyRDp8V3w5TLSQAjneI_s
+
+
+
+###
+GET http://localhost:3000/api/profile
+
+###
+GET http://localhost:3000/api/role
+
+
+###
+GET http://localhost:3000/api/profile
+
+###
+GET http://localhost:3000/api/user
+
+###
+GET http://localhost:3000/api/collaborator
+
+###
+POST http://localhost:3000/api/collaborator
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IkNhbGl0b24iLCJ1c2VybmFtZSI6ImNhbGl0b24iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE2MzU3ODY4OTAsImV4cCI6MTYzNTc4NjkyMH0.yefywkQnVXF2M_Hwq6wpqrKAvcMsYdXhN4c7DoJcev8
+Content-Type: application/json
+
+{
+    "name": "Caliton",
+    "email": "caliton@mail.com",
+    "register": "123.456.789",
+    "birthday": "1996-06-03",
+    "hiringdate": "2018-10-01",
+    "departament": "76f54ee2-6e65-4ad8-89e4-1b0c79c77ef0",
+    "profile": "d7a21b23-a62e-4cd4-997b-4eca51096368",
+    "role": "2c9afceb-fd60-4330-9a90-0c3363003296"
+}
+
+
+
+
+
+###
+GET http://localhost:3000/api/globalsettings
+
+
