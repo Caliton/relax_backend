@@ -1,12 +1,58 @@
+
 ###
-GET http://localhost:3000/api/collaborator/2021
+GET http://localhost:3000/api/collaborator/
 
 
+###
+POST http://localhost:3000/api/collaborator/bulk/
+Content-Type: application/json
 
-
-
-
-
+{
+    "data": [
+  {
+    "register": "1234",
+    "name": "Andre Vasconcelos Souto",
+    "hiringdate": "2000-01-01",
+    "birthday": "2018-10-01"
+  },
+  {
+    "register": "1235",
+    "name": "Angelica Lucio Fidale Sampaio",
+    "hiringdate": "2000-01-02",
+    "birthday": "2010-12-31"
+  },
+  {
+    "register": "1236",
+    "name": "Anna Paula Graboski Correia Lima",
+    "hiringdate": "2000-01-03",
+    "birthday": "2010-01-03"
+  },
+  {
+    "register": "1237",
+    "name": "Antonio Carlos Neto",
+    "hiringdate": "2000-01-04",
+    "birthday": "2019-08-01"
+  },
+  {
+    "register": "1238",
+    "name": "Bruno Alberto de Oliveira",
+    "hiringdate": "2000-01-05",
+    "birthday": "2010-01-05"
+  },
+  {
+    "register": "1240",
+    "name": "Caio Cezar Queiroz",
+    "hiringdate": "2000-01-07",
+    "birthday": "2010-01-07"
+  },
+  {
+    "register": "1208",
+    "name": "Caliton Marcos Gonçalves Junior",
+    "hiringdate": "1996-06-03",
+    "birthday": "2019-10-01"
+  }
+]
+}
 
 
 

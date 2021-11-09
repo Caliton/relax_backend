@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { Collaborator } from './collaborator.entity';
 import { CollaboratorService } from './collaborator.service';
+import { BulkCollaboratorsDto } from './dto/collaboratorBulkDto';
 
 @Controller('collaborator')
 export class CollaboratorController {
@@ -17,6 +18,27 @@ export class CollaboratorController {
   @Get()
   async index(): Promise<any> {
     return await this.collaboratorService.findAll();
+  }
+
+  @Post('bulk')
+  async createMany(@Body() collaborators: BulkCollaboratorsDto) {
+    const response = await this.collaboratorService.createManyCollaborators(
+      collaborators.data,
+    );
+
+    if (!response.length) {
+      return {
+        message: 'Os colaboradores desta lista já encontram-se cadastrados!',
+      };
+    } else {
+      return {
+        message: `${response.length} ${
+          response.length === 1
+            ? 'Colaborador cadastrado'
+            : 'Colaboradores cadastrados'
+        }`,
+      };
+    }
   }
 
   @Post()

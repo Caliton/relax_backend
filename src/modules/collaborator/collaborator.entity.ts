@@ -30,13 +30,19 @@ export class Collaborator {
   @Column({ type: 'date' })
   hiringdate: string;
 
-  @ManyToOne(() => Departament, (departament) => departament.collaborators)
+  @ManyToOne(() => Departament, (departament) => departament.collaborators, {
+    nullable: true,
+  })
   departament: Departament;
 
-  @ManyToOne(() => Profile, (profile) => profile.collaborators)
+  @ManyToOne(() => Profile, (profile) => profile.collaborators, {
+    nullable: true,
+  })
   profile: Profile;
 
-  @ManyToOne(() => Collaborator, (collaborators) => collaborators.children)
+  @ManyToOne(() => Collaborator, (collaborators) => collaborators.children, {
+    nullable: true,
+  })
   supervisor: Collaborator;
 
   @OneToMany(() => Collaborator, (collaborator) => collaborator.supervisor)

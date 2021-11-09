@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { PeriodStatusService } from '../periodStatus/period-status.service';
 import { Collaborator } from './collaborator.entity';
 import * as moment from 'moment';
+import { CollaboratorBulkDto } from './dto/collaboratorBulkDto';
 
 @Injectable()
 export class CollaboratorService {
@@ -169,5 +170,26 @@ export class CollaboratorService {
 
   async deleteById(id: string) {
     await this.collaboratorRepo.softDelete(id);
+  }
+
+  async createManyCollaborators(collaborators: CollaboratorBulkDto[]) {
+    const collaboratorsDatabase = await this.collaboratorRepo.find();
+
+    const collaboratorsContains = collaborators.filter((a) =>
+      collaboratorsDatabase.some((b) => a.register === b.register),
+    );
+
+    const newsCollaborators = [];
+    let isOldPerson = false;
+
+    collaborators.forEach((a) => {
+      isOldPerson = collaboratorsContains.some((b) => {
+        return a.register === b.register;
+      });
+
+      if (!isOldPerson) newsCollaborators.push(a);
+    });
+
+    return await this.collaboratorRepo.save(newsCollaborators);
   }
 }
