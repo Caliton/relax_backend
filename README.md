@@ -6,7 +6,7 @@ $ npm install
 
 ## Running the app
 
-### Obs: por enquanto precisa da instalação de um Banco de dados Mysql local... consulte o arquivo .example.env para atribuir os dados de conexão para aplicação
+##### Obs: por enquanto precisa da instalação de um Banco de dados Mysql local... consulte o arquivo .example.env para atribuir os dados de conexão para aplicação
 
 ```bash
 # development
