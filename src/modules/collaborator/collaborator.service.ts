@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { PeriodStatusService } from '../periodStatus/period-status.service';
 import { Collaborator } from './collaborator.entity';
 import * as moment from 'moment';
 import { CollaboratorBulkDto } from './dto/collaboratorBulkDto';
+import { FilterCollaboratorDto } from './dto/filter-collaborator.dto';
 
 @Injectable()
 export class CollaboratorService {
@@ -15,10 +16,14 @@ export class CollaboratorService {
     private readonly collaboratorRepo: Repository<Collaborator>,
   ) {}
 
-  async findAll() {
+  async findAll(query: FilterCollaboratorDto) {
+    let { filter } = query;
+    if (!filter) filter = '';
+
     const collaborators = await this.collaboratorRepo.find({
       relations: ['requests'],
       order: { name: 'ASC' },
+      where: { name: Like(`%${filter}%`) },
     });
 
     const status = await this.periodStatusService.findAll();

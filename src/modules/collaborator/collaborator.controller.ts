@@ -6,20 +6,25 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
+import { Role } from '../auth/role.decorator';
+import { UserRole } from '../user/user-role.enum';
 import { Collaborator } from './collaborator.entity';
 import { CollaboratorService } from './collaborator.service';
 import { BulkCollaboratorsDto } from './dto/collaboratorBulkDto';
+import { FilterCollaboratorDto } from './dto/filter-collaborator.dto';
 
 @Controller('collaborator')
 export class CollaboratorController {
   constructor(private readonly collaboratorService: CollaboratorService) {}
 
   @Get()
-  async index(): Promise<any> {
-    return await this.collaboratorService.findAll();
+  async index(@Query() query: FilterCollaboratorDto): Promise<any> {
+    return await this.collaboratorService.findAll(query);
   }
 
+  @Role(UserRole.ADMIN, UserRole.SUPERVISOR)
   @Post('bulk')
   async createMany(@Body() collaborators: BulkCollaboratorsDto) {
     const response = await this.collaboratorService.createManyCollaborators(
