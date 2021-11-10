@@ -11,7 +11,6 @@ import { noCacheMiddleware } from './core/middlewares/no-cache';
 import { DepartamentModule } from './modules/departament/departament.module';
 
 import { CollaboratorModule } from './modules/collaborator/collaborator.module';
-import { RoleModule } from './modules/role/role.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { UserController } from './modules/user/user.controller';
 import { UserModule } from './modules/user/user.module';
@@ -20,9 +19,14 @@ import { PeriodModule } from './modules/period/period.module';
 import { PeriodStatusModule } from './modules/periodStatus/period-status.module';
 import { VacationRequestModule } from './modules/vacationRequest/vacation-request.module';
 import { RequestStatusModule } from './modules/requestStatus/request-status.module';
+import { WinstonModule } from 'nest-winston';
+import { winstonConfig } from './core/configs/winston.config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { LoggerInterceptor } from './core/interceptors/logger.interceptor';
 
 @Module({
   imports: [
+    WinstonModule.forRoot(winstonConfig),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
       serveStaticOptions: {
@@ -36,7 +40,6 @@ import { RequestStatusModule } from './modules/requestStatus/request-status.modu
     GlobalSettingsModule,
     ProfileModule,
     CollaboratorModule,
-    RoleModule,
     PeriodModule,
     PeriodStatusModule,
     VacationRequestModule,
@@ -44,7 +47,13 @@ import { RequestStatusModule } from './modules/requestStatus/request-status.modu
     UserModule,
   ],
   controllers: [AppController, UserController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggerInterceptor,
+    },
+  ],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

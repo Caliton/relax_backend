@@ -6,7 +6,6 @@ import { GlobalSettings } from 'src/modules/globalSettings/globalSettings.entity
 import { PeriodStatus } from 'src/modules/periodStatus/period-status.entity';
 import { Profile } from 'src/modules/profile/profile.entity';
 import { VacationRequest } from 'src/modules/vacationRequest/vacation-request.entity';
-import { Role } from 'src/modules/role/role.entity';
 import { User } from 'src/modules/user/user.entity';
 
 @Module({
@@ -22,7 +21,6 @@ import { User } from 'src/modules/user/user.entity';
       password: process.env.DB_PASS,
       entities: [
         Departament,
-        Role,
         Profile,
         Collaborator,
         User,

@@ -4,12 +4,15 @@ import {
   Get,
   Post,
   Req,
-  UnauthorizedException,
   UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
+import { UserRole } from 'src/modules/user/user-role.enum';
 import { Role } from '../role.decorator';
 import { RoleGuard } from '../role.guard';
 import { AuthService } from './auth.service';
+import { CredentialsDto } from './dtos/credentials.dto';
+import { ReturnSigninDto } from './dtos/return-signin.dto';
 import { JwtGuard } from './jwt.guard';
 
 @Controller()
@@ -17,13 +20,13 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('login')
-  async login(@Body() body) {
-    const token = await this.authService.login(body.login, body.password);
-
-    return token ? { token } : new UnauthorizedException();
+  async login(
+    @Body(ValidationPipe) credentiaslsDto: CredentialsDto,
+  ): Promise<ReturnSigninDto> {
+    return await this.authService.login(credentiaslsDto);
   }
 
-  @Role('admin')
+  @Role(UserRole.ADMIN, UserRole.COLLABORATOR)
   @UseGuards(JwtGuard, RoleGuard)
   @Get('test-auth')
   test(@Req() req) {

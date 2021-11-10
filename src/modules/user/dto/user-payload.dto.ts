@@ -1,9 +1,9 @@
 import { Collaborator } from 'src/modules/collaborator/collaborator.entity';
-import { Role } from 'src/modules/role/role.entity';
+import { UserRole } from '../user-role.enum';
 
 export class UserPayloadDto {
   readonly id: string;
   readonly login: string;
-  readonly role: Role;
+  readonly role: UserRole;
   readonly collaborator: Collaborator;
 }

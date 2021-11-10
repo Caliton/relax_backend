@@ -30,7 +30,7 @@ export class UserService {
     try {
       return await this.userRepo.findOne({
         where: { login },
-        relations: ['role', 'collaborator'],
+        relations: ['collaborator'],
       });
     } catch (e) {
       console.log(e);

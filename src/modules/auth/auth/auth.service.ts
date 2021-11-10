@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserPayloadDto } from 'src/modules/user/dto/user-payload.dto';
 import { UserService } from 'src/modules/user/user.service';
+import { CredentialsDto } from './dtos/credentials.dto';
+import { ReturnSigninDto } from './dtos/return-signin.dto';
 
 @Injectable()
 export class AuthService {
@@ -10,32 +12,32 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async login(login: string, password: string) {
-    const user = await this.validateCredentials(login, password);
+  async login(credentialsDto: CredentialsDto): Promise<ReturnSigninDto> {
+    const user = await this.validateCredentials(credentialsDto);
 
-    if (!user) return;
+    if (!user) throw new UnauthorizedException('Usuário ou senha inválidos');
 
     const payload = {
       id: user.id,
       name: user.collaborator.name,
       username: user.login,
-      role: user.role.description,
+      role: user.role,
     };
 
-    return this.jwtService.sign(payload);
+    return { token: this.jwtService.sign(payload), user };
   }
 
   async validateCredentials(
-    login: string,
-    pass: string,
+    credentialsDto: CredentialsDto,
   ): Promise<UserPayloadDto> {
+    const { login } = credentialsDto;
     const user = await this.userService.findLogin(login);
 
     if (!user) return;
 
     const { password, ...result } = user;
 
-    if (!this.comparePassword(pass, password)) return;
+    if (!this.comparePassword(credentialsDto.password, password)) return;
 
     return result;
   }

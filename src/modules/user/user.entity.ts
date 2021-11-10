@@ -2,12 +2,11 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Collaborator } from '../collaborator/collaborator.entity';
-import { Role } from '../role/role.entity';
+import { UserRole } from './user-role.enum';
 
 @Entity()
 export class User {
@@ -18,8 +17,12 @@ export class User {
   @JoinColumn()
   collaborator: Collaborator;
 
-  @ManyToOne(() => Role, (role) => role.users)
-  role: Role;
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.COLLABORATOR,
+  })
+  role: UserRole;
 
   @Column()
   login: string;

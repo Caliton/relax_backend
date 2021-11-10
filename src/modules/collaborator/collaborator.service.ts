@@ -18,6 +18,7 @@ export class CollaboratorService {
   async findAll() {
     const collaborators = await this.collaboratorRepo.find({
       relations: ['requests'],
+      order: { name: 'ASC' },
     });
 
     const status = await this.periodStatusService.findAll();
@@ -107,7 +108,7 @@ export class CollaboratorService {
         color: 'grey-5',
         icon: 'eva-alert-circle-outline',
         tooltip:
-          'Este colaborador não tem histórico de lançamento de férias cadastros no sistema',
+          'Este colaborador não tem histórico de lançamento de férias cadastrado no sistema',
       };
 
       return situation;
@@ -169,7 +170,7 @@ export class CollaboratorService {
   }
 
   async deleteById(id: string) {
-    await this.collaboratorRepo.softDelete(id);
+    await this.collaboratorRepo.delete(id);
   }
 
   async createManyCollaborators(collaborators: CollaboratorBulkDto[]) {
