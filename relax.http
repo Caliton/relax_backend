@@ -1,6 +1,13 @@
 
+
+
+
 ###
-GET http://localhost:3000/api/collaborator/?filter=caliton
+GET http://localhost:3000/api/collaborator/d8cbd074-293f-4be8-a7f5-ee0858aa8f5e/vacationrequests/
+
+
+###
+GET http://localhost:3000/api/collaborator/
 
 
 ###
@@ -13,7 +20,6 @@ Content-Type: application/json
   "birthday": "1990-01-01",
   "hiringdate": "2021-01-01"
 }
-
 
 
 ###
@@ -44,10 +50,8 @@ GET http://localhost:3000/api/profile
 ###
 GET http://localhost:3000/api/user
 
-###
-GET http://localhost:3000/api/collaborator
 
-###
+
 POST http://localhost:3000/api/collaborator
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IkNhbGl0b24iLCJ1c2VybmFtZSI6ImNhbGl0b24iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE2MzU3ODY4OTAsImV4cCI6MTYzNTc4NjkyMH0.yefywkQnVXF2M_Hwq6wpqrKAvcMsYdXhN4c7DoJcev8
 Content-Type: application/json
@@ -62,8 +66,6 @@ Content-Type: application/json
     "profile": "d7a21b23-a62e-4cd4-997b-4eca51096368",
     "role": "2c9afceb-fd60-4330-9a90-0c3363003296"
 }
-
-
 
 
 

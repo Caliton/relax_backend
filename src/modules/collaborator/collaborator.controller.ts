@@ -56,6 +56,11 @@ export class CollaboratorController {
     return await this.collaboratorService.update(id, body);
   }
 
+  @Get(':id/vacationrequests')
+  async getRequests(@Param('id') id: string) {
+    return await this.collaboratorService.findRequests(id);
+  }
+
   @Delete(':id')
   async destroy(@Param('id') id: string) {
     await this.collaboratorService.deleteById(id);

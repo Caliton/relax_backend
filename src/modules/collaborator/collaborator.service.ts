@@ -6,6 +6,9 @@ import { Collaborator } from './collaborator.entity';
 import * as moment from 'moment';
 import { CollaboratorBulkDto } from './dto/collaboratorBulkDto';
 import { FilterCollaboratorDto } from './dto/filter-collaborator.dto';
+import { handleErrors } from 'src/shared/utils/errors-helper';
+import { VacationRequest } from '../vacationRequest/vacation-request.entity';
+import { MAX_DAYS_PER_PERIOD } from 'src/core/enumerators';
 
 @Injectable()
 export class CollaboratorService {
@@ -26,42 +29,91 @@ export class CollaboratorService {
       where: { name: Like(`%${filter}%`) },
     });
 
-    const status = await this.periodStatusService.findAll();
-
-    const newCollaborators = collaborators.map((col) => ({
-      ...col,
-      requests: this.handleRequest(col),
-    }));
-
     return Promise.all(
-      newCollaborators.map((col) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { requests, ...rest } = col;
-        return { ...rest, situation: this.calculedSituation(col, status) };
+      collaborators.map(async (col) => {
+        const { limitEnterprise } = this.makePeriodLimits(
+          col.requests,
+          col.hiringdate,
+        );
+
+        const { daysEnjoyed } = this.makePeriodDaysAllowed(col.requests);
+
+        const situation = await this.makePeriodStatus(
+          limitEnterprise,
+          col.hiringdate,
+          daysEnjoyed,
+        );
+
+        return { ...col, situation };
       }),
     );
   }
 
-  private handleRequest(collaborator: any) {
-    const { requests } = collaborator;
+  async findRequests(id: string) {
+    if (!id) throw handleErrors(id, 'id do colaborador não informado');
 
-    if (!requests.length) return [];
+    const collaborator = await this.collaboratorRepo.findOne(id, {
+      relations: ['requests'],
+    });
 
-    const treatRequest = requests
+    const { start, end } = this.makePeriodRange(
+      collaborator.requests,
+      collaborator.hiringdate,
+    );
+
+    const { limitEnterprise, ultimate } = this.makePeriodLimits(
+      collaborator.requests,
+      collaborator.hiringdate,
+    );
+
+    const { daysAllowed, daysEnjoyed, daysBalance } =
+      this.makePeriodDaysAllowed(collaborator.requests);
+
+    const situation = await this.makePeriodStatus(
+      limitEnterprise,
+      collaborator.hiringdate,
+      daysEnjoyed,
+    );
+
+    const period = {
+      start,
+      end,
+      limitEnterprise,
+      ultimate,
+      daysAllowed,
+      daysEnjoyed,
+      daysBalance,
+      requests: collaborator.requests.filter(
+        (a) =>
+          moment(a.finalDate) < moment(end) &&
+          moment(a.finalDate) > moment(start),
+      ), /// nao nan oanaon ta errado pega as requestes originais
+      situation,
+    };
+
+    return { period };
+  }
+
+  private reduceYearRequest(requests: Array<VacationRequest>) {
+    return requests
       .filter((c) => c.status === 'approved')
       .reduce(
         (a: any, b: any) => ({
           ...a,
-          [moment(b.finalDate).year()]: [
-            ...(a[moment(b.finalDate).year()] || []),
+          [moment(b.startDate).year()]: [
+            ...(a[moment(b.startDate).year()] || []),
             b,
           ],
         }),
         {},
       );
+  }
 
-    const countDay = (lista: any) =>
-      lista
+  private handleRequest(requests: Array<VacationRequest>) {
+    const treatRequest = this.reduceYearRequest(requests);
+
+    const countDay = (list: any) =>
+      list
         .map((item: any) => moment(item.finalDate).diff(item.startDate, 'day'))
         .reduce((a: any, b: any) => a + b);
 
@@ -71,10 +123,11 @@ export class CollaboratorService {
       newRequest.push({
         year: parseInt(item),
         daysEnjoyed: countDay(treatRequest[item]),
+        requests: treatRequest[item],
       });
     });
 
-    return newRequest;
+    return newRequest.sort((a, b) => a.year - b.year);
   }
 
   private calculeLimitsPeriod(hiringdate: string, year: number) {
@@ -87,7 +140,10 @@ export class CollaboratorService {
     ultimate.year(year + 1);
     ultimate.month(ultimate.get('month') + 11);
 
-    return { limitEnterprise, ultimate };
+    return {
+      limitEnterprise: moment(limitEnterprise).format('YYYY-MM-DD'),
+      ultimate: moment(ultimate).format('YYYY-MM-DD'),
+    };
   }
 
   private calculeRangePeriod(hiringdate: string, year: number) {
@@ -100,24 +156,83 @@ export class CollaboratorService {
     return { start: start.format('YYYY-MM-DD'), end: end.format('YYYY-MM-DD') };
   }
 
-  private calculedSituation(collaborator: any, situations: Array<any>) {
-    const { hiringdate, requests } = collaborator;
+  private calculedYear(requests: Array<VacationRequest>, hiringdate) {
+    const treatRequest = this.handleRequest(requests);
+    let year = moment().year();
 
-    let situation = {};
-    let gossip = 0;
-    const lessYearCompany = moment().diff(moment(hiringdate), 'year') === 0;
+    // pega a data mais antiga e coloca em destaque, caso periodo esteja inadiplente
+    let chaves = treatRequest
+      .sort((a, b) => a.year - b.year)
+      .filter((a) => a.daysEnjoyed < MAX_DAYS_PER_PERIOD)
+      .shift();
 
-    if (!requests.length && !lessYearCompany) {
-      situation = {
-        description: 'INDEFINIDO',
-        color: 'grey-5',
-        icon: 'eva-alert-circle-outline',
-        tooltip:
-          'Este colaborador não tem histórico de lançamento de férias cadastrado no sistema',
-      };
+    // caso todos os periodos estiver ok, ele pegara o ano mais recente
+    if (!chaves)
+      chaves = treatRequest
+        .sort((a, b) => b.year - a.year)
+        .filter((a) => a.daysEnjoyed === MAX_DAYS_PER_PERIOD)
+        .shift();
 
-      return situation;
+    // caso não encontre nenhuma solicitação ele retornará o ano atual
+    if (!chaves) return year;
+
+    const dateMaisAntiga = chaves.requests
+      .sort((a, b) => a.startDate - b.startDate)
+      .shift().startDate;
+
+    if (moment(dateMaisAntiga).month() < moment(hiringdate).month()) {
+      year = chaves.year - 1;
+    } else {
+      year = chaves.year;
     }
+    return year;
+  }
+
+  private makePeriodRange(requests: Array<VacationRequest>, hiringdate) {
+    if (!requests.length)
+      return this.calculeRangePeriod(hiringdate, moment(hiringdate).year() + 1);
+
+    const year = this.calculedYear(requests, hiringdate);
+
+    return this.calculeRangePeriod(hiringdate, year);
+  }
+
+  private makePeriodLimits(requests: Array<VacationRequest>, hiringdate) {
+    if (!requests.length)
+      return this.calculeLimitsPeriod(
+        hiringdate,
+        moment(hiringdate).year() + 1,
+      );
+
+    const year = this.calculedYear(requests, hiringdate);
+
+    return this.calculeLimitsPeriod(hiringdate, year);
+  }
+
+  private makePeriodDaysAllowed(requests: Array<VacationRequest>) {
+    const daysAllowed = MAX_DAYS_PER_PERIOD;
+
+    let daysEnjoyed = 0;
+    let daysBalance = 0;
+
+    if (!!requests.length)
+      daysEnjoyed = this.handleRequest(requests)[0].daysEnjoyed;
+
+    daysBalance = daysAllowed - daysEnjoyed;
+
+    return {
+      daysAllowed,
+      daysEnjoyed,
+      daysBalance,
+    };
+  }
+
+  private async makePeriodStatus(limitEnterprise, hiringdate, daysEnjoyed) {
+    const situations = await this.periodStatusService.findAll();
+    let situation;
+    let gossip = 0;
+
+    const lessYearCompany = moment().diff(moment(hiringdate), 'year') === 0;
 
     if (lessYearCompany) {
       situation = {
@@ -127,17 +242,16 @@ export class CollaboratorService {
         tooltip: 'Este colaborador ainda não completou um ano na empresa',
       };
 
-      return situation;
+      return Promise.resolve(situation);
     }
 
-    const year =
-      requests
-        .sort((a, b) => a.year - b.year)
-        .filter((a) => a.daysEnjoyed < 30)
-        .shift().year || moment().year();
+    if (daysEnjoyed === MAX_DAYS_PER_PERIOD) {
+      situation = situations
+        .sort((a, b) => a.limitMonths - b.limitMonths)
+        .slice(-1)[0];
 
-    const { limitEnterprise } = this.calculeLimitsPeriod(hiringdate, year);
-    const rangePeriod = this.calculeRangePeriod(hiringdate, year);
+      return Promise.resolve(situation);
+    }
 
     situations.forEach((status, index) => {
       if (
@@ -152,7 +266,7 @@ export class CollaboratorService {
       }
     });
 
-    return { ...situation, rangePeriod: rangePeriod };
+    return Promise.resolve(situation);
   }
 
   async findOneOrFail(id: string) {

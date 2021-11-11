@@ -10,7 +10,7 @@ import {
 import { VacationRequest } from './vacation-request.entity';
 import { VacationRequestService } from './vacation-request.service';
 
-@Controller('requeststatus')
+@Controller('vacationrequest')
 export class VacationRequestController {
   constructor(
     private readonly vacationRequestService: VacationRequestService,
