@@ -239,6 +239,7 @@ export class CollaboratorService {
         description: 'NOVATO',
         color: 'grey-5',
         icon: 'fas fa-baby',
+        limitMonths: 13,
         tooltip: 'Este colaborador ainda não completou um ano na empresa',
       };
 
