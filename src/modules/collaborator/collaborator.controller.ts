@@ -25,7 +25,7 @@ export class CollaboratorController {
   }
 
   @Role(UserRole.ADMIN, UserRole.SUPERVISOR)
-  @Post('bulk')
+  @Post('import')
   async createMany(@Body() collaborators: BulkCollaboratorsDto) {
     const response = await this.collaboratorService.createManyCollaborators(
       collaborators.data,
