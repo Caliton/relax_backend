@@ -24,26 +24,32 @@ export class CollaboratorController {
     return await this.collaboratorService.findAll(query);
   }
 
+  @Get()
+  getHello(): string {
+    return 'merda';
+  }
+
   @Role(UserRole.ADMIN, UserRole.SUPERVISOR)
   @Post('import')
   async createMany(@Body() collaborators: BulkCollaboratorsDto) {
+    console.log(collaborators);
+
     const response = await this.collaboratorService.createManyCollaborators(
       collaborators.data,
     );
 
-    if (!response.length) {
+    if (!response.length)
       return {
         message: 'Os colaboradores desta lista já encontram-se cadastrados!',
       };
-    } else {
-      return {
-        message: `${response.length} ${
-          response.length === 1
-            ? 'Colaborador cadastrado'
-            : 'Colaboradores cadastrados'
-        }`,
-      };
-    }
+
+    return {
+      message: `${response.length} ${
+        response.length === 1
+          ? 'Colaborador cadastrado'
+          : 'Colaboradores cadastrados'
+      }`,
+    };
   }
 
   @Post()
@@ -59,6 +65,13 @@ export class CollaboratorController {
   @Get(':id/vacationrequests')
   async getRequests(@Param('id') id: string) {
     return await this.collaboratorService.findRequests(id);
+  }
+
+  @Get(':id/period')
+  async getNextPeriod(@Param('id') id: string, @Query() year) {
+    console.log(year);
+
+    return await this.collaboratorService.getPeriod(id, parseInt(year.year));
   }
 
   @Delete(':id')

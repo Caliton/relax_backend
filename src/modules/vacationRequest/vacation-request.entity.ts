@@ -18,6 +18,9 @@ export class VacationRequest {
   @Column({ type: 'date' })
   finalDate: string;
 
+  @Column({ type: 'date' })
+  startPeriod: string;
+
   @ManyToOne(() => Collaborator, (collaborator) => collaborator.requests)
   requestUser: Collaborator;
 

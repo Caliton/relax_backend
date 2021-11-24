@@ -18,7 +18,6 @@ import { GlobalSettingsModule } from './modules/globalSettings/globalsettings.mo
 import { PeriodModule } from './modules/period/period.module';
 import { PeriodStatusModule } from './modules/periodStatus/period-status.module';
 import { VacationRequestModule } from './modules/vacationRequest/vacation-request.module';
-import { RequestStatusModule } from './modules/requestStatus/request-status.module';
 import { WinstonModule } from 'nest-winston';
 import { winstonConfig } from './core/configs/winston.config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
@@ -43,7 +42,6 @@ import { LoggerInterceptor } from './core/interceptors/logger.interceptor';
     PeriodModule,
     PeriodStatusModule,
     VacationRequestModule,
-    RequestStatusModule,
     UserModule,
   ],
   controllers: [AppController, UserController],

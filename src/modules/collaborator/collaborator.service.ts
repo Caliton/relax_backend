@@ -7,19 +7,22 @@ import * as moment from 'moment';
 import { CollaboratorBulkDto } from './dto/collaboratorBulkDto';
 import { FilterCollaboratorDto } from './dto/filter-collaborator.dto';
 import { handleErrors } from 'src/shared/utils/errors-helper';
-import { VacationRequest } from '../vacationRequest/vacation-request.entity';
+import {
+  RequestStatus,
+  VacationRequest,
+} from '../vacationRequest/vacation-request.entity';
 import { MAX_DAYS_PER_PERIOD } from 'src/core/enumerators';
 
 @Injectable()
 export class CollaboratorService {
   constructor(
-    private readonly periodStatusService: PeriodStatusService,
-
     @InjectRepository(Collaborator)
     private readonly collaboratorRepo: Repository<Collaborator>,
+
+    private readonly periodStatusService: PeriodStatusService,
   ) {}
 
-  async findAll(query: FilterCollaboratorDto) {
+  public async findAll(query: FilterCollaboratorDto) {
     let { filter } = query;
     if (!filter) filter = '';
 
@@ -30,48 +33,45 @@ export class CollaboratorService {
     });
 
     return Promise.all(
-      collaborators.map(async (col) => {
-        const { limitEnterprise } = this.makePeriodLimits(
-          col.requests,
-          col.hiringdate,
-        );
+      collaborators.map(async (collaborator) => {
+        const { requests, hiringdate } = collaborator;
+        const { limitEnterprise } = this.makePeriodLimits({
+          requests,
+          hiringdate,
+        });
 
-        const period = this.makePeriodRange(col.requests, col.hiringdate);
+        const period = this.makePeriodRange({ requests, hiringdate });
 
-        const { daysEnjoyed } = this.makePeriodDaysAllowed(
-          col.requests,
-          period,
-        );
+        const { daysEnjoyed } = this.makePeriodDaysAllowed(requests, period);
 
         const situation = await this.makePeriodStatus(
           limitEnterprise,
           daysEnjoyed,
         );
 
-        return { ...col, situation };
+        return { ...collaborator, situation };
       }),
     );
   }
 
-  async findRequests(id: string) {
+  public async findRequests(id: string) {
     if (!id) throw handleErrors(id, 'id do colaborador não informado');
 
     const collaborator = await this.collaboratorRepo.findOne(id, {
       relations: ['requests'],
     });
 
-    const { start, end } = this.makePeriodRange(
-      collaborator.requests,
-      collaborator.hiringdate,
-    );
+    const { requests, hiringdate } = collaborator;
 
-    const { limitEnterprise, ultimate } = this.makePeriodLimits(
-      collaborator.requests,
-      collaborator.hiringdate,
-    );
+    const { start, end } = this.makePeriodRange({ requests, hiringdate });
+
+    const { limitEnterprise, ultimate } = this.makePeriodLimits({
+      requests,
+      hiringdate,
+    });
 
     const { daysAllowed, daysEnjoyed, daysBalance } =
-      this.makePeriodDaysAllowed(collaborator.requests, { start, end });
+      this.makePeriodDaysAllowed(requests, { start, end });
 
     const situation = await this.makePeriodStatus(limitEnterprise, daysEnjoyed);
 
@@ -83,46 +83,88 @@ export class CollaboratorService {
       daysAllowed,
       daysEnjoyed,
       daysBalance,
-      requests: collaborator.requests.filter(
-        (a) =>
-          moment(a.finalDate) < moment(end) &&
-          moment(a.finalDate) > moment(start),
-      ),
+      requests: requests.filter((a) => a.startPeriod === start),
       situation,
     };
 
-    return { period };
+    return { ...period };
   }
 
-  private reduceYearRequest(requests: Array<VacationRequest>) {
-    return requests
-      .filter((c) => c.status === 'approved')
+  public async getPeriod(id: string, year: number) {
+    if (!id) throw handleErrors(id, 'id do colaborador não informado');
+
+    const collaborator = await this.collaboratorRepo.findOne(id, {
+      relations: ['requests'],
+    });
+
+    const { requests, hiringdate } = collaborator;
+
+    const { start, end } = this.makePeriodRange({ requests, hiringdate, year });
+
+    const { limitEnterprise, ultimate } = this.makePeriodLimits({
+      requests,
+      hiringdate,
+      year,
+    });
+
+    const { daysAllowed, daysEnjoyed, daysBalance, daysScheduled } =
+      this.makePeriodDaysAllowed(requests, { start, end });
+
+    const situation = await this.makePeriodStatus(limitEnterprise, daysEnjoyed);
+
+    const period = {
+      start,
+      end,
+      limitEnterprise,
+      ultimate,
+      daysAllowed,
+      daysEnjoyed,
+      daysScheduled,
+      daysBalance,
+      requests: requests
+        .filter((a) => a.startPeriod === start)
+        .sort(
+          (a, b) =>
+            parseInt(moment(b.startDate).format('YYYYMMDD')) -
+            parseInt(moment(a.startDate).format('YYYYMMDD')),
+        ),
+      situation,
+    };
+
+    return { ...period };
+  }
+
+  private reduceYearRequest(requests: Array<VacationRequest>, status) {
+    const reduceRequests = requests
+      .filter((c) => status.includes(c.status))
       .reduce(
         (a: any, b: any) => ({
           ...a,
-          [moment(b.startDate).year()]: [
-            ...(a[moment(b.startDate).year()] || []),
+          [moment(b.startPeriod).year()]: [
+            ...(a[moment(b.startPeriod).year()] || []),
             b,
           ],
         }),
         {},
       );
+
+    return reduceRequests;
   }
 
   private handleRequest(requests: Array<VacationRequest>) {
-    const treatRequest = this.reduceYearRequest(requests);
-
-    const countDay = (list: any) =>
-      list
-        .map((item: any) => moment(item.finalDate).diff(item.startDate, 'day'))
-        .reduce((a: any, b: any) => a + b);
+    const treatRequestApproved = this.reduceYearRequest(requests, ['approved']);
+    const treatRequest = this.reduceYearRequest(requests, [
+      'approved',
+      'refused',
+      'requested',
+    ]);
 
     const newRequests = [];
 
     Object.getOwnPropertyNames(treatRequest).forEach((item) => {
       newRequests.push({
         year: parseInt(item),
-        daysEnjoyed: countDay(treatRequest[item]),
+        daysEnjoyed: this.countDay(treatRequestApproved[item]),
         requests: treatRequest[item],
       });
     });
@@ -140,6 +182,13 @@ export class CollaboratorService {
       limitEnterprise: moment(limitEnterprise).format('YYYY-MM-DD'),
       ultimate: moment(ultimate).format('YYYY-MM-DD'),
     };
+  }
+
+  private countDay(list: any) {
+    if (!list || !list.length) return 0;
+    return list
+      .map((item: any) => moment(item.finalDate).diff(item.startDate, 'day'))
+      .reduce((a: any, b: any) => a + b);
   }
 
   private calculeRangePeriod(hiringdate: string, year: number) {
@@ -177,27 +226,35 @@ export class CollaboratorService {
     // if it doesn't find any request it will return the current year
     if (!pendingDate) return year;
 
-    const oldestDate = pendingDate.requests
-      .sort((a, b) => a.startDate - b.startDate)
-      .shift().startDate;
+    // const oldestDate = pendingDate.requests.sort(
+    //   (a, b) =>
+    //     parseInt(moment(a.startDate).format('YYYYDDMM')) -
+    //     parseInt(moment(b.startDate).format('YYYYDDMM')),
+    // )[0].startDate;
 
-    // check if the year of the period is the one found or refers to the year of the previous period
-    if (moment(oldestDate).month() < moment(hiringdate).month()) {
-      year = pendingDate.year - 1;
-    } else {
-      year = pendingDate.year;
-    }
+    // // check if the year of the period is the one found or refers to the year of the previous period
+    // if (moment(oldestDate).month() < moment(hiringdate).month()) {
+    //   year = pendingDate.year - 1;
+    // } else {
+    //   year = pendingDate.year;
+    // }
+    year = pendingDate.year;
+
     return year;
   }
 
-  private makePeriodRange(requests: Array<VacationRequest>, hiringdate) {
-    const year = this.calculedYear(requests, hiringdate);
+  private makePeriodRange(props) {
+    const { requests, hiringdate } = props;
+
+    const year = props.year || this.calculedYear(requests, hiringdate);
 
     return this.calculeRangePeriod(hiringdate, year);
   }
 
-  private makePeriodLimits(requests: Array<VacationRequest>, hiringdate) {
-    const year = this.calculedYear(requests, hiringdate);
+  private makePeriodLimits(props) {
+    const { requests, hiringdate } = props;
+
+    const year = props.year || this.calculedYear(requests, hiringdate);
 
     return this.calculeLimitsPeriod(hiringdate, year);
   }
@@ -208,24 +265,47 @@ export class CollaboratorService {
   ) {
     const daysAllowed = MAX_DAYS_PER_PERIOD;
 
-    let daysEnjoyed = 0;
     let daysBalance = 0;
+    let daysScheduled = 0;
+    let daysEnjoyed = 0;
+
+    let letReserve = 0;
 
     if (requests.length) {
-      const requestAgroupYear = this.handleRequest(requests);
+      // const requestAgroupYear = this.handleRequest(requests);
 
-      const requestCurrent = requestAgroupYear.find(
-        (request) => request.year === period.start,
+      const requestScheduled = requests.filter(
+        (request) =>
+          request.startPeriod === period.start &&
+          request.status === RequestStatus.APPROVED,
       );
 
-      daysEnjoyed = requestCurrent ? requestCurrent.daysEnjoyed : 0;
+      const requestEnjoyed = requests.filter(
+        (request) =>
+          request.startPeriod === period.start &&
+          request.status === RequestStatus.APPROVED &&
+          parseInt(moment(request.finalDate).format('YYYYMMDD')) <
+            parseInt(moment().format('YYYYMMDD')),
+      );
+
+      if (!requestEnjoyed.length) {
+        daysEnjoyed = 0;
+      } else {
+        daysEnjoyed = requestEnjoyed
+          .map((item) => moment(item.finalDate).diff(item.startDate, 'day'))
+          .reduce((a, b) => a + b);
+      }
+
+      letReserve = this.countDay(requestScheduled);
     }
 
-    daysBalance = daysAllowed - daysEnjoyed;
+    daysScheduled = letReserve - daysEnjoyed;
+    daysBalance = daysAllowed - letReserve;
 
     return {
       daysAllowed,
       daysEnjoyed,
+      daysScheduled,
       daysBalance,
     };
   }

@@ -7,6 +7,7 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
+import { RequestStatusDto } from './dto/request-status.dto';
 import { VacationRequest } from './vacation-request.entity';
 import { VacationRequestService } from './vacation-request.service';
 
@@ -15,6 +16,11 @@ export class VacationRequestController {
   constructor(
     private readonly vacationRequestService: VacationRequestService,
   ) {}
+
+  @Post('status')
+  async setStatusRequest(@Body() requestStatus: RequestStatusDto) {
+    return this.vacationRequestService.alterStatus(requestStatus);
+  }
 
   @Get()
   async index(): Promise<VacationRequest[]> {

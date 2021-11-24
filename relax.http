@@ -2,12 +2,35 @@
 
 
 
-###
-GET http://localhost:3000/api/collaborator/d8cbd074-293f-4be8-a7f5-ee0858aa8f5e/vacationrequests/
+### aloisio
+GET http://localhost:3000/api/collaborator/696b530a-8f3e-4ab4-a01f-c0d392f967b7/vacationrequests/
+
+### aloisio
+GET http://localhost:3000/api/collaborator/696b530a-8f3e-4ab4-a01f-c0d392f967b7/vacationrequests/
+
+### andre
+GET http://localhost:3000/api/collaborator/2b797d47-f05f-4a24-89a3-caa6d24037a3/vacationrequests/
+
+
+### leticia
+GET http://localhost:3000/api/collaborator/455ecd05-1f73-4a8d-a277-200707badff6/vacationrequests/
+
+
+### jose
+GET http://localhost:3000/api/collaborator/128238c0-faf5-43f9-8925-4824b29ca57a/vacationrequests/
 
 
 ###
 GET http://localhost:3000/api/collaborator/
+
+
+###
+GET http://localhost:3000/api/periodstatus/
+
+
+###
+GET http://localhost:3000/api/vacationrequest/
+
 
 
 ###
@@ -19,6 +42,20 @@ Content-Type: application/json
   "name": "Jandira",
   "birthday": "1990-01-01",
   "hiringdate": "2021-01-01"
+}
+
+
+###
+POST http://localhost:3000/api/vacationrequest/
+Content-Type: application/json
+
+{
+  "startDate": "2020-05-01",
+  "finalDate": "2020-05-20",
+  "startPeriod": "2019-10-01",
+  "requestUser": "2b797d47-f05f-4a24-89a3-caa6d24037a3",
+  "status": "requested",
+  "approvalUser": "73e96b14-db47-409c-8277-d07e1ba8c624"
 }
 
 
@@ -74,53 +111,35 @@ GET http://localhost:3000/api/globalsettings
 
 
 ###
-POST http://localhost:3000/api/collaborator/bulk/
+POST http://localhost:3000/api/collaborator/import/
 
 Content-Type: application/json
 
 {
-    "data": [
-  {
-    "register": "1234",
-    "name": "Andre Vasconcelos Souto",
-    "hiringdate": "2000-01-01",
-    "birthday": "2018-10-01"
-  },
-  {
-    "register": "1235",
-    "name": "Angelica Lucio Fidale Sampaio",
-    "hiringdate": "2000-01-02",
-    "birthday": "2010-12-31"
-  },
-  {
-    "register": "1236",
-    "name": "Anna Paula Graboski Correia Lima",
-    "hiringdate": "2000-01-03",
-    "birthday": "2010-01-03"
-  },
-  {
-    "register": "1237",
-    "name": "Antonio Carlos Neto",
-    "hiringdate": "2000-01-04",
-    "birthday": "2019-08-01"
-  },
-  {
-    "register": "1238",
-    "name": "Bruno Alberto de Oliveira",
-    "hiringdate": "2000-01-05",
-    "birthday": "2010-01-05"
-  },
-  {
-    "register": "1240",
-    "name": "Caio Cezar Queiroz",
-    "hiringdate": "2000-01-07",
-    "birthday": "2010-01-07"
-  },
-  {
-    "register": "1208",
-    "name": "Caliton Marcos Gonçalves Junior",
-    "hiringdate": "1996-06-03",
-    "birthday": "2019-10-01"
-  }
-]
+  "data": [
+    {
+      "register": "9995",
+      "name": "Zoio",
+      "hiringdate": "2000-01-01",
+      "birthday": "2018-10-01"
+    },
+    {
+      "register": "9994",
+      "name": "Zebra",
+      "hiringdate": "2000-01-02",
+      "birthday": "2010-12-31"
+    },
+    {
+      "register": "9991",
+      "name": "Zema",
+      "hiringdate": "2000-01-03",
+      "birthday": "2010-01-03"
+    },
+    {
+      "register": "9996",
+      "name": "Zureta",
+      "hiringdate": "2000-01-04",
+      "birthday": "2019-08-01"
+    }
+  ]
 }
