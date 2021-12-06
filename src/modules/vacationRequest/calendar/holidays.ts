@@ -134,7 +134,7 @@ export class HolidaysRelax {
     ];
   }
 
-  public isHoliday(date: Date): boolean {
+  public isHoliday(date): boolean {
     const momentDate = moment(date);
     if (!momentDate.isValid()) {
       return false;

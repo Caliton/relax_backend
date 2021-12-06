@@ -2,8 +2,32 @@
 
 
 
+
+
+
+### cachorro
+POST http://localhost:3000/api/vacationrequest/oi
+Content-Type: application/json
+
+{
+  "startDate": "2020-05-01",
+  "finalDate": "2020-05-20",
+  "startPeriod": "2019-10-01",
+  "requestUser": "2b797d47-f05f-4a24-89a3-caa6d24037a3",
+  "status": "requested",
+  "approvalUser": "73e96b14-db47-409c-8277-d07e1ba8c624"
+}
+
+
+
+
+
+
+
+
 ### aloisio
 GET http://localhost:3000/api/collaborator/696b530a-8f3e-4ab4-a01f-c0d392f967b7/vacationrequests/
+
 
 ### aloisio
 GET http://localhost:3000/api/collaborator/696b530a-8f3e-4ab4-a01f-c0d392f967b7/vacationrequests/
@@ -112,34 +136,41 @@ GET http://localhost:3000/api/globalsettings
 
 ###
 POST http://localhost:3000/api/collaborator/import/
-
 Content-Type: application/json
 
 {
   "data": [
     {
-      "register": "9995",
+      "register": "243151",
       "name": "Zoio",
-      "hiringdate": "2000-01-01",
-      "birthday": "2018-10-01"
+      "birthday": "2000-01-01",
+      "hiringdate": "2018-10-01",
+      "daysEnjoyed": 20,
+      "periodOk": 2018
     },
     {
-      "register": "9994",
+      "register": "243152",
       "name": "Zebra",
-      "hiringdate": "2000-01-02",
-      "birthday": "2010-12-31"
+      "birthday": "2000-01-02",
+      "hiringdate": "2010-12-31",
+      "daysEnjoyed": 15,
+      "periodOk": 2019
     },
     {
-      "register": "9991",
+      "register": "243153",
       "name": "Zema",
-      "hiringdate": "2000-01-03",
-      "birthday": "2010-01-03"
+      "birthday": "2000-01-03",
+      "hiringdate": "2010-01-03",
+      "daysEnjoyed": 10,
+      "periodOk": 2020
     },
     {
-      "register": "9996",
+      "register": "243154",
       "name": "Zureta",
-      "hiringdate": "2000-01-04",
-      "birthday": "2019-08-01"
+      "birthday": "2000-01-04",
+      "hiringdate": "2019-08-01",
+      "daysEnjoyed": 20,
+      "periodOk": 2019
     }
   ]
 }

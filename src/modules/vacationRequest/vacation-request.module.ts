@@ -8,5 +8,6 @@ import { VacationRequestService } from './vacation-request.service';
   imports: [TypeOrmModule.forFeature([VacationRequest])],
   controllers: [VacationRequestController],
   providers: [VacationRequestService],
+  exports: [VacationRequestService],
 })
 export class VacationRequestModule {}

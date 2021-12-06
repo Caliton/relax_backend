@@ -7,6 +7,7 @@ import { PeriodStatus } from 'src/modules/periodStatus/period-status.entity';
 import { Profile } from 'src/modules/profile/profile.entity';
 import { VacationRequest } from 'src/modules/vacationRequest/vacation-request.entity';
 import { User } from 'src/modules/user/user.entity';
+import { Holiday } from 'src/modules/holiday/holiday.entity';
 
 @Module({
   imports: [
@@ -20,12 +21,13 @@ import { User } from 'src/modules/user/user.entity';
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       entities: [
-        Departament,
-        Profile,
         Collaborator,
-        User,
+        Departament,
         GlobalSettings,
+        Holiday,
         PeriodStatus,
+        Profile,
+        User,
         VacationRequest,
       ],
       synchronize: process.env.DEPLOY !== 'prod',

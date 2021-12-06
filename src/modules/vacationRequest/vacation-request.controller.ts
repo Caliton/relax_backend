@@ -32,6 +32,13 @@ export class VacationRequestController {
     return await this.vacationRequestService.create(body);
   }
 
+  // @Post('oi')
+  // async oi(@Body() body) {
+  //   this.vacationRequestService.cachorro(body);
+
+  //   return 'oi';
+  // }
+
   @Put(':id')
   async update(@Param('id') id: string, @Body() body: VacationRequest) {
     return await this.vacationRequestService.update(id, body);

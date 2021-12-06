@@ -12,12 +12,14 @@ import {
   VacationRequest,
 } from '../vacationRequest/vacation-request.entity';
 import { MAX_DAYS_PER_PERIOD } from 'src/core/enumerators';
+import { VacationRequestService } from '../vacationRequest/vacation-request.service';
 
 @Injectable()
 export class CollaboratorService {
   constructor(
     @InjectRepository(Collaborator)
     private readonly collaboratorRepo: Repository<Collaborator>,
+    private readonly requestService: VacationRequestService,
 
     private readonly periodStatusService: PeriodStatusService,
   ) {}
@@ -380,6 +382,47 @@ export class CollaboratorService {
       if (!isOldPerson) newsCollaborators.push(a);
     });
 
-    return await this.collaboratorRepo.save(newsCollaborators);
+    // const listRequest = await this.requestService.findAll();
+
+    const newColabInserted = await this.collaboratorRepo.save(
+      newsCollaborators,
+    );
+
+    if (newColabInserted.length) {
+      newColabInserted.forEach(async (a) => {
+        const colab = new Collaborator();
+        colab.id = a.id;
+
+        const vacationOk: VacationRequest = new VacationRequest();
+
+        const startDate = moment(a.hiringdate).year(a.periodOk);
+        const finalDate = startDate.clone().add(30, 'day');
+
+        vacationOk.startDate = startDate.format('YYYY-MM-DD');
+        vacationOk.finalDate = finalDate.format('YYYY-MM-DD');
+        vacationOk.startPeriod = startDate.format('YYYY-MM-DD');
+        vacationOk.requestUser = colab;
+        vacationOk.status = RequestStatus.APPROVED;
+        vacationOk.approvalUser = null;
+
+        if (a.daysEnjoyed > 0) {
+          const vacationNo: VacationRequest = new VacationRequest();
+          const startDateNo = moment(a.hiringdate).year(a.periodOk + 1);
+          const finalDateNo = startDateNo.clone().add(a.daysEnjoyed, 'day');
+
+          vacationNo.startDate = startDateNo.format('YYYY-MM-DD');
+          vacationNo.finalDate = finalDateNo.format('YYYY-MM-DD');
+          vacationNo.startPeriod = startDateNo.format('YYYY-MM-DD');
+          vacationNo.requestUser = colab;
+          vacationNo.status = RequestStatus.APPROVED;
+          vacationNo.approvalUser = null;
+          await this.requestService.create(vacationNo);
+        }
+
+        await this.requestService.create(vacationOk);
+      });
+    }
+
+    return newColabInserted;
   }
 }

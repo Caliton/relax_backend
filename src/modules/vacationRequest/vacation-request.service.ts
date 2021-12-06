@@ -12,7 +12,9 @@ export class VacationRequestService {
   ) {}
 
   async findAll() {
-    return await this.vacationRequestRepo.find();
+    return await this.vacationRequestRepo.find({
+      relations: ['requestUser'],
+    });
   }
 
   async alterStatus(requestStatus: RequestStatusDto) {
@@ -36,6 +38,7 @@ export class VacationRequestService {
   }
 
   async create(data: VacationRequest) {
+    console.log(data);
     return await this.vacationRequestRepo.save(
       this.vacationRequestRepo.create(data),
     );

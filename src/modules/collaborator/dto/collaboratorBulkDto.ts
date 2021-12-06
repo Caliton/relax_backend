@@ -3,6 +3,8 @@ export class CollaboratorBulkDto {
   readonly register: string;
   readonly hiringDate: string;
   readonly birthDay: string;
+  readonly daysEnjoyed: number;
+  readonly periodOk: number;
 }
 
 export class BulkCollaboratorsDto {

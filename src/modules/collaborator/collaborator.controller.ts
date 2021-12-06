@@ -26,10 +26,10 @@ export class CollaboratorController {
 
   @Get()
   getHello(): string {
-    return 'merda';
+    return 'teste olá';
   }
 
-  @Role(UserRole.ADMIN, UserRole.SUPERVISOR)
+  // @Role(UserRole.ADMIN, UserRole.SUPERVISOR)
   @Post('import')
   async createMany(@Body() collaborators: BulkCollaboratorsDto) {
     console.log(collaborators);

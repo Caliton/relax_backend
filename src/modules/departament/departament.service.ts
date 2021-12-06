@@ -22,6 +22,10 @@ export class DepartamentService {
     }
   }
 
+  public cachorro() {
+    return true;
+  }
+
   async create(data: Departament) {
     return await this.departRepository.save(this.departRepository.create(data));
   }

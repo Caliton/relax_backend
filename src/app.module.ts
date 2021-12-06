@@ -22,6 +22,7 @@ import { WinstonModule } from 'nest-winston';
 import { winstonConfig } from './core/configs/winston.config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { LoggerInterceptor } from './core/interceptors/logger.interceptor';
+import { HolidayModule } from './modules/holiday/holiday.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { LoggerInterceptor } from './core/interceptors/logger.interceptor';
     AuthModule,
     DepartamentModule,
     GlobalSettingsModule,
+    HolidayModule,
     ProfileModule,
     CollaboratorModule,
     PeriodModule,
