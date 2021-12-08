@@ -8,7 +8,7 @@ import {
   Put,
 } from '@nestjs/common';
 import { GlobalSettings } from './globalsettings.entity';
-import { GlobalSettingsService } from './globalSettings.service';
+import { GlobalSettingsService } from './globalsettings.service';
 
 @Controller('globalsettings')
 export class GlobalSettingsController {
