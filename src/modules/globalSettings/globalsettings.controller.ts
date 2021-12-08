@@ -7,7 +7,7 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { GlobalSettings } from './globalSettings.entity';
+import { GlobalSettings } from './globalsettings.entity';
 import { GlobalSettingsService } from './globalSettings.service';
 
 @Controller('globalsettings')

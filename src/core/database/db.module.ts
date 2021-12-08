@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Collaborator } from 'src/modules/collaborator/collaborator.entity';
 import { Departament } from 'src/modules/departament/departament.entity';
-import { GlobalSettings } from 'src/modules/globalSettings/globalSettings.entity';
+import { GlobalSettings } from 'src/modules/globalSettings/globalsettings.entity';
 import { PeriodStatus } from 'src/modules/periodStatus/period-status.entity';
 import { Profile } from 'src/modules/profile/profile.entity';
 import { VacationRequest } from 'src/modules/vacationRequest/vacation-request.entity';

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { GlobalSettings } from './globalSettings.entity';
+import { GlobalSettings } from './globalsettings.entity';
 
 @Injectable()
 export class GlobalSettingsService {

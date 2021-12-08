@@ -181,7 +181,8 @@ export class Period {
   }
 
   private async makePeriodStatus(limitEnterprise, daysEnjoyed) {
-    const situations = await this.periodStatusService.findAll();
+    const situations = [];
+
     let situation;
     let gossip = 0;
 

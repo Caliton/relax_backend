@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { GlobalSettingsController } from './globalSettings.controller';
-import { GlobalSettings } from './globalSettings.entity';
+import { GlobalSettingsController } from './globalsettings.controller';
+import { GlobalSettings } from './globalsettings.entity';
 import { GlobalSettingsService } from './globalSettings.service';
 
 @Module({
