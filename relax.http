@@ -49,11 +49,23 @@ GET http://localhost:3000/api/collaborator/
 
 
 ###
+GET http://localhost:3000/api/holiday/all/2021
+
+
+###
+GET http://localhost:3000/api/holiday/regional
+
+
+###
 GET http://localhost:3000/api/periodstatus/
 
 
 ###
 GET http://localhost:3000/api/vacationrequest/
+
+
+###
+GET http://localhost:3000/api/user/
 
 
 

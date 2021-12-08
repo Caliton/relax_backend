@@ -14,9 +14,14 @@ import { HolidayService } from './holiday.service';
 export class HolidayController {
   constructor(private readonly holidayService: HolidayService) {}
 
-  @Get()
-  async index(): Promise<Holiday[]> {
-    return this.holidayService.findAll();
+  @Get('all/:year')
+  async index(@Param('year') year: string): Promise<Holiday[]> {
+    return this.holidayService.findAll(parseInt(year));
+  }
+
+  @Get('regional')
+  async findAllRegional(): Promise<Holiday[]> {
+    return this.holidayService.findAllRegional();
   }
 
   @Post()

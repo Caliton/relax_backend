@@ -12,7 +12,7 @@ export class UserService {
 
   async findAll() {
     const user = await this.userRepo.find({
-      relations: ['role', 'collaborator'],
+      relations: ['collaborator'],
     });
 
     return user;

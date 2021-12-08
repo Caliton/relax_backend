@@ -56,6 +56,12 @@ export class CollaboratorService {
     );
   }
 
+  public async findAllCollaborators() {
+    try {
+      return await this.collaboratorRepo.find();
+    } catch (e) {}
+  }
+
   public async findRequests(id: string) {
     if (!id) throw handleErrors(id, 'id do colaborador não informado');
 

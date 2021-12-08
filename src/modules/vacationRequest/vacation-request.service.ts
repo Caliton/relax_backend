@@ -38,7 +38,6 @@ export class VacationRequestService {
   }
 
   async create(data: VacationRequest) {
-    console.log(data);
     return await this.vacationRequestRepo.save(
       this.vacationRequestRepo.create(data),
     );

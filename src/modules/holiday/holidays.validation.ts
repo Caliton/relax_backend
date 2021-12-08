@@ -1,4 +1,5 @@
-import moment from 'moment';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const moment = require('moment');
 
 export class HolidaysRelax {
   year: number;
@@ -14,7 +15,7 @@ export class HolidaysRelax {
     this.fillHolidays();
   }
 
-  fillHolidays() {
+  async fillHolidays() {
     this.holidays = [
       {
         date: moment(this.easter).add(-2, 'd'),
@@ -110,6 +111,7 @@ export class HolidaysRelax {
     const month = M < 10 ? '0' + M : M;
     const day = D < 10 ? '0' + D : D;
     const easterDate = this.year + '-' + month + '-' + day;
+
     return moment(easterDate);
   }
 

@@ -24,9 +24,9 @@ export class CollaboratorController {
     return await this.collaboratorService.findAll(query);
   }
 
-  @Get()
-  getHello(): string {
-    return 'teste olá';
+  @Get('all')
+  async getHello(): Promise<any> {
+    return await this.collaboratorService.findAllCollaborators();
   }
 
   // @Role(UserRole.ADMIN, UserRole.SUPERVISOR)
