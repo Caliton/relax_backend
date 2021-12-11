@@ -6,9 +6,13 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Departament } from '../departament/departament.entity';
-import { Period } from '../period/period.entity';
 import { Profile } from '../profile/profile.entity';
 import { VacationRequest } from '../vacationRequest/vacation-request.entity';
+
+export enum CollaboratorType {
+  EFFECTIVE = 'effective',
+  INTERN = 'intern',
+}
 
 @Entity()
 export class Collaborator {
@@ -55,4 +59,11 @@ export class Collaborator {
   approval: VacationRequest[];
 
   period: object;
+
+  @Column({
+    type: 'enum',
+    enum: CollaboratorType,
+    default: CollaboratorType.EFFECTIVE,
+  })
+  type: CollaboratorType;
 }

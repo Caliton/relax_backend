@@ -14,9 +14,9 @@ import { PeriodStatusService } from './period-status.service';
 export class PeriodStatusController {
   constructor(private readonly periodstatusService: PeriodStatusService) {}
 
-  @Get()
-  async index(): Promise<PeriodStatus[]> {
-    return this.periodstatusService.findAll();
+  @Get(':type')
+  async index(@Param('type') type: string): Promise<PeriodStatus[]> {
+    return this.periodstatusService.findAll({ type });
   }
 
   @Post()

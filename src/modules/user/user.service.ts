@@ -15,7 +15,10 @@ export class UserService {
       relations: ['collaborator'],
     });
 
-    return user;
+    return user.map((user) => {
+      delete user.password;
+      return user;
+    });
   }
 
   async findOneOrFail(id: string) {
@@ -49,6 +52,6 @@ export class UserService {
   }
 
   async deleteById(id: string) {
-    await this.userRepo.softDelete(id);
+    await this.userRepo.delete(id);
   }
 }

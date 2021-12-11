@@ -1,5 +1,5 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Period } from '../period/period.entity';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { CollaboratorType } from '../collaborator/collaborator.entity';
 
 @Entity()
 export class PeriodStatus {
@@ -20,4 +20,11 @@ export class PeriodStatus {
 
   @Column()
   tooltip: string;
+
+  @Column({
+    type: 'enum',
+    enum: CollaboratorType,
+    default: CollaboratorType.EFFECTIVE,
+  })
+  type: CollaboratorType;
 }

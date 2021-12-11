@@ -59,6 +59,6 @@ export class HolidayService {
   }
 
   async deleteById(id: string) {
-    await this.holidayRepository.softDelete(id);
+    await this.holidayRepository.delete(id);
   }
 }

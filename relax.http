@@ -94,6 +94,21 @@ Content-Type: application/json
   "approvalUser": "73e96b14-db47-409c-8277-d07e1ba8c624"
 }
 
+###
+DELETE http://localhost:3000/api/user/191b32cd-9d07-4b84-abb4-dd35a636ea2f
+
+
+###
+POST http://localhost:3000/api/user
+Content-Type: application/json
+
+{
+    "login": "caliton",
+    "password": "123",
+    "collaboratorId": "0d4cb76e-27a7-4a5f-a2c6-d4e41842feec",
+    "role": "collaborator"
+}
+
 
 ###
 POST http://localhost:3000/api/login

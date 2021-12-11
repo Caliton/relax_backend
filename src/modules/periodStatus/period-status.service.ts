@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { PeriodStatus } from './period-status.entity';
 
 @Injectable()
@@ -10,8 +10,12 @@ export class PeriodStatusService {
     private readonly profileRepository: Repository<PeriodStatus>,
   ) {}
 
-  async findAll() {
+  async findAll(query) {
+    let { type } = query;
+    if (!type) type = '';
+
     return await this.profileRepository.find({
+      where: { type: Like(`%${type}%`) },
       order: {
         limitMonths: 'ASC',
       },

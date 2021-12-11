@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import { PeriodStatusService } from '../periodStatus/period-status.service';
-import { Collaborator } from './collaborator.entity';
+import { Collaborator, CollaboratorType } from './collaborator.entity';
 import * as moment from 'moment';
 import { CollaboratorBulkDto } from './dto/collaboratorBulkDto';
 import { FilterCollaboratorDto } from './dto/filter-collaborator.dto';
@@ -36,7 +36,7 @@ export class CollaboratorService {
 
     return Promise.all(
       collaborators.map(async (collaborator) => {
-        const { requests, hiringdate } = collaborator;
+        const { requests, hiringdate, type } = collaborator;
         const { limitEnterprise } = this.makePeriodLimits({
           requests,
           hiringdate,
@@ -49,6 +49,7 @@ export class CollaboratorService {
         const situation = await this.makePeriodStatus(
           limitEnterprise,
           daysEnjoyed,
+          type,
         );
 
         return { ...collaborator, situation };
@@ -56,9 +57,16 @@ export class CollaboratorService {
     );
   }
 
-  public async findAllCollaborators() {
+  public async findAllCollaborators(query: FilterCollaboratorDto) {
     try {
-      return await this.collaboratorRepo.find();
+      let { filter } = query;
+      if (!filter) filter = '';
+
+      return await this.collaboratorRepo.find({
+        relations: ['requests'],
+        order: { name: 'ASC' },
+        where: { name: Like(`%${filter}%`) },
+      });
     } catch (e) {}
   }
 
@@ -69,7 +77,7 @@ export class CollaboratorService {
       relations: ['requests'],
     });
 
-    const { requests, hiringdate } = collaborator;
+    const { requests, hiringdate, type } = collaborator;
 
     const { start, end } = this.makePeriodRange({ requests, hiringdate });
 
@@ -81,7 +89,11 @@ export class CollaboratorService {
     const { daysAllowed, daysEnjoyed, daysBalance } =
       this.makePeriodDaysAllowed(requests, { start, end });
 
-    const situation = await this.makePeriodStatus(limitEnterprise, daysEnjoyed);
+    const situation = await this.makePeriodStatus(
+      limitEnterprise,
+      daysEnjoyed,
+      type,
+    );
 
     const period = {
       start,
@@ -105,7 +117,7 @@ export class CollaboratorService {
       relations: ['requests'],
     });
 
-    const { requests, hiringdate } = collaborator;
+    const { requests, hiringdate, type } = collaborator;
 
     const { start, end } = this.makePeriodRange({ requests, hiringdate, year });
 
@@ -118,7 +130,11 @@ export class CollaboratorService {
     const { daysAllowed, daysEnjoyed, daysBalance, daysScheduled } =
       this.makePeriodDaysAllowed(requests, { start, end });
 
-    const situation = await this.makePeriodStatus(limitEnterprise, daysEnjoyed);
+    const situation = await this.makePeriodStatus(
+      limitEnterprise,
+      daysEnjoyed,
+      type,
+    );
 
     const period = {
       start,
@@ -318,8 +334,14 @@ export class CollaboratorService {
     };
   }
 
-  private async makePeriodStatus(limitEnterprise, daysEnjoyed) {
-    const situations = await this.periodStatusService.findAll();
+  private async makePeriodStatus(
+    limitEnterprise,
+    daysEnjoyed,
+    type: CollaboratorType,
+  ) {
+    const situations = await this.periodStatusService.findAll({
+      type,
+    });
     let situation;
     let gossip = 0;
 
