@@ -21,6 +21,10 @@ export const ALLOWED_DAYS_PER_MONTHS = 2.5;
 
 export const PARAM_LIMIT_DATE = 6;
 
+export const PARAM_LIMIT_DATE_ENTERPRISE = 6;
+
+export const PARAM_LIMIT_DATE_GOVERNE = 23;
+
 /**
  * Months of a year
  */

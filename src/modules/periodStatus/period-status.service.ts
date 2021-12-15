@@ -44,6 +44,6 @@ export class PeriodStatusService {
   }
 
   async deleteById(id: string) {
-    await this.profileRepository.softDelete(id);
+    await this.profileRepository.delete(id);
   }
 }

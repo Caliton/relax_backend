@@ -22,20 +22,10 @@ export class GlobalSettingsService {
     }
   }
 
-  async create(data: GlobalSettings) {
-    return await this.globalSettingsRepo.save(
-      this.globalSettingsRepo.create(data),
-    );
-  }
-
   async update(id: string, data: GlobalSettings) {
     const globalSettings = await this.findOneOrFail(id);
 
     this.globalSettingsRepo.merge(globalSettings, data);
     return await this.globalSettingsRepo.save(globalSettings);
-  }
-
-  async deleteById(id: string) {
-    await this.globalSettingsRepo.softDelete(id);
   }
 }
