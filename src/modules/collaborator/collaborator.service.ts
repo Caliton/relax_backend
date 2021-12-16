@@ -249,6 +249,10 @@ export class CollaboratorService {
       .filter((a) => a.daysEnjoyed < MAX_DAYS_PER_PERIOD)
       .shift();
 
+    if (!pendingDate) {
+      year = treatRequest.sort((a, b) => a.year - b.year)[0].year + 1;
+      return year;
+    }
     // if it doesn't find any request it will return the current year
     if (!pendingDate) return year;
 
