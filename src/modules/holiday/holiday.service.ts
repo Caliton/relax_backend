@@ -15,11 +15,38 @@ export class HolidayService {
   ) {}
 
   async findAll(year: number) {
-    const { data } = await firstValueFrom(
+    const { data: currentDate } = await firstValueFrom(
       this.http.get(
         'https://brasilapi.com.br/api/feriados/v1/{year}'.replace(
           '{year}',
           year.toString(),
+        ),
+      ),
+    );
+
+    const { data: previousDate } = await firstValueFrom(
+      this.http.get(
+        'https://brasilapi.com.br/api/feriados/v1/{year}'.replace(
+          '{year}',
+          (year - 1).toString(),
+        ),
+      ),
+    );
+
+    const { data: nextDate } = await firstValueFrom(
+      this.http.get(
+        'https://brasilapi.com.br/api/feriados/v1/{year}'.replace(
+          '{year}',
+          (year + 1).toString(),
+        ),
+      ),
+    );
+
+    const { data: next2Date } = await firstValueFrom(
+      this.http.get(
+        'https://brasilapi.com.br/api/feriados/v1/{year}'.replace(
+          '{year}',
+          (year + 2).toString(),
         ),
       ),
     );
@@ -30,7 +57,13 @@ export class HolidayService {
 
     console.log(x);
 
-    return [...data, ...holidayDb];
+    return [
+      ...previousDate,
+      ...currentDate,
+      ...holidayDb,
+      ...nextDate,
+      ...next2Date,
+    ];
   }
 
   async findAllRegional() {

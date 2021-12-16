@@ -211,7 +211,9 @@ export class CollaboratorService {
   private countDay(list: any) {
     if (!list || !list.length) return 0;
     return list
-      .map((item: any) => moment(item.finalDate).diff(item.startDate, 'day'))
+      .map(
+        (item: any) => moment(item.finalDate).diff(item.startDate, 'day') + 1,
+      )
       .reduce((a: any, b: any) => a + b);
   }
 
@@ -287,7 +289,23 @@ export class CollaboratorService {
     requests: Array<VacationRequest>,
     period: { start: string; end: string },
   ) {
-    const daysAllowed = MAX_DAYS_PER_PERIOD;
+    let daysAllowed = MAX_DAYS_PER_PERIOD;
+
+    const isOldPeriod =
+      parseInt(moment(period.end).format('YYYYMMDD')) <
+      parseInt(moment().format('YYYYMMDD'));
+
+    const isNewPeriod =
+      parseInt(moment(period.start).format('YYYYMMDD')) >
+      parseInt(moment().format('YYYYMMDD'));
+
+    const calculedDaysAllowed = Math.trunc(
+      moment().diff(period.start, 'M') * 2.5,
+    );
+
+    daysAllowed = isOldPeriod ? MAX_DAYS_PER_PERIOD : calculedDaysAllowed;
+
+    if (isNewPeriod) daysAllowed = 0;
 
     let daysBalance = 0;
     let daysScheduled = 0;
@@ -316,7 +334,7 @@ export class CollaboratorService {
         daysEnjoyed = 0;
       } else {
         daysEnjoyed = requestEnjoyed
-          .map((item) => moment(item.finalDate).diff(item.startDate, 'day'))
+          .map((item) => moment(item.finalDate).diff(item.startDate, 'day') + 1)
           .reduce((a, b) => a + b);
       }
 

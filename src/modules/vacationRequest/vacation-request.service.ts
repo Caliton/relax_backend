@@ -1,8 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { request } from 'http';
+import * as moment from 'moment';
+import { MAX_DAYS_PER_PERIOD } from 'src/core/enumerators';
 import { Repository } from 'typeorm';
 import { RequestStatusDto } from './dto/request-status.dto';
-import { VacationRequest } from './vacation-request.entity';
+import { RequestStatus, VacationRequest } from './vacation-request.entity';
 
 @Injectable()
 export class VacationRequestService {
@@ -12,9 +15,19 @@ export class VacationRequestService {
   ) {}
 
   async findAll() {
-    return await this.vacationRequestRepo.find({
+    const requests = await this.vacationRequestRepo.find({
       relations: ['requestUser'],
     });
+
+    return requests.map((e) => ({
+      ...e,
+      ...this.makePeriodDaysAllowed(requests, {
+        start: e.startPeriod,
+        end: moment(e.startPeriod)
+          .year(moment(e.startPeriod).year() + 1)
+          .format('YYYY-MM-DD'),
+      }),
+    }));
   }
 
   async alterStatus(requestStatus: RequestStatusDto) {
@@ -35,6 +48,82 @@ export class VacationRequestService {
     } catch (error) {
       throw new NotFoundException(error.message);
     }
+  }
+
+  private makePeriodDaysAllowed(
+    requests: Array<VacationRequest>,
+    period: { start: string; end: string },
+  ) {
+    let daysAllowed = MAX_DAYS_PER_PERIOD;
+
+    const isOldPeriod =
+      parseInt(moment(period.end).format('YYYYMMDD')) <
+      parseInt(moment().format('YYYYMMDD'));
+
+    const isNewPeriod =
+      parseInt(moment(period.start).format('YYYYMMDD')) >
+      parseInt(moment().format('YYYYMMDD'));
+
+    const calculedDaysAllowed = Math.trunc(
+      moment().diff(period.start, 'M') * 2.5,
+    );
+
+    daysAllowed = isOldPeriod ? MAX_DAYS_PER_PERIOD : calculedDaysAllowed;
+
+    if (isNewPeriod) daysAllowed = 0;
+
+    let daysBalance = 0;
+    let daysScheduled = 0;
+    let daysEnjoyed = 0;
+
+    let letReserve = 0;
+
+    if (requests.length) {
+      // const requestAgroupYear = this.handleRequest(requests);
+
+      const requestScheduled = requests.filter(
+        (request) =>
+          request.startPeriod === period.start &&
+          request.status === RequestStatus.APPROVED,
+      );
+
+      const requestEnjoyed = requests.filter(
+        (request) =>
+          request.startPeriod === period.start &&
+          request.status === RequestStatus.APPROVED &&
+          parseInt(moment(request.finalDate).format('YYYYMMDD')) <
+            parseInt(moment().format('YYYYMMDD')),
+      );
+
+      if (!requestEnjoyed.length) {
+        daysEnjoyed = 0;
+      } else {
+        daysEnjoyed = requestEnjoyed
+          .map((item) => moment(item.finalDate).diff(item.startDate, 'day') + 1)
+          .reduce((a, b) => a + b);
+      }
+
+      letReserve = this.countDay(requestScheduled);
+    }
+
+    daysScheduled = letReserve - daysEnjoyed;
+    daysBalance = daysAllowed - letReserve;
+
+    return {
+      daysAllowed,
+      daysEnjoyed,
+      daysScheduled,
+      daysBalance,
+    };
+  }
+
+  private countDay(list: any) {
+    if (!list || !list.length) return 0;
+    return list
+      .map(
+        (item: any) => moment(item.finalDate).diff(item.startDate, 'day') + 1,
+      )
+      .reduce((a: any, b: any) => a + b);
   }
 
   async create(data: VacationRequest) {
