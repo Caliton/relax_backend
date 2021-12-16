@@ -446,7 +446,7 @@ export class CollaboratorService {
         const vacationOk: VacationRequest = new VacationRequest();
 
         const startDate = moment(a.hiringdate).year(a.periodOk);
-        const finalDate = startDate.clone().add(30, 'day');
+        const finalDate = startDate.clone().add(29, 'day');
 
         vacationOk.startDate = startDate.format('YYYY-MM-DD');
         vacationOk.finalDate = finalDate.format('YYYY-MM-DD');
