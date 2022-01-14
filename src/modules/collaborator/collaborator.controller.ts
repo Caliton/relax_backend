@@ -67,13 +67,6 @@ export class CollaboratorController {
     return await this.collaboratorService.findRequests(id);
   }
 
-  @Get(':id/period')
-  async getNextPeriod(@Param('id') id: string, @Query() year) {
-    console.log(year);
-
-    return await this.collaboratorService.getPeriod(id, parseInt(year.year));
-  }
-
   @Delete(':id')
   async destroy(@Param('id') id: string) {
     await this.collaboratorService.deleteById(id);

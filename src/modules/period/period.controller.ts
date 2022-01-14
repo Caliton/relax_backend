@@ -1,16 +1,14 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Put,
-} from '@nestjs/common';
-import { Period } from './period.entity';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { PeriodService } from './period.service';
 
-@Controller('periodstatus')
+@Controller('period')
 export class PeriodController {
   constructor(private readonly periodstatusService: PeriodService) {}
+
+  @Get(':id/period')
+  async getNextPeriod(@Param('id') id: string, @Query() year) {
+    console.log(year);
+
+    return await this.periodstatusService.getPeriod(id, parseInt(year.year));
+  }
 }
