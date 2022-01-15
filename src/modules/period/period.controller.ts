@@ -5,7 +5,7 @@ import { PeriodService } from './period.service';
 export class PeriodController {
   constructor(private readonly periodstatusService: PeriodService) {}
 
-  @Get(':id/period')
+  @Get(':id/collaborator')
   async getNextPeriod(@Param('id') id: string, @Query() year) {
     console.log(year);
 

@@ -1,10 +1,4 @@
 
-
-
-
-
-
-
 ### cachorro
 POST http://localhost:3000/api/vacationrequest/oi
 Content-Type: application/json
@@ -23,6 +17,10 @@ Content-Type: application/json
 
 
 
+
+
+### aloisio
+GET http://localhost:3000/api/period/696b530a-8f3e-4ab4-a01f-c0d392f967b7/collaborator/
 
 
 ### aloisio
