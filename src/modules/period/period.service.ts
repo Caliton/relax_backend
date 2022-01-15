@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import * as moment from 'moment';
 import { MAX_DAYS_PER_PERIOD } from 'src/core/enumerators';
 import { handleErrors } from 'src/shared/utils/errors-helper';
@@ -13,8 +13,8 @@ import {
 @Injectable()
 export class PeriodService {
   constructor(
-    private readonly collaboratorService: CollaboratorService,
     private readonly periodStatusService: PeriodStatusService,
+    private readonly collaboratorService: CollaboratorService,
   ) {}
 
   public async getPeriod(id: string, year: number) {

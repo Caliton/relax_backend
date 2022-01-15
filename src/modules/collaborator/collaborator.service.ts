@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import { Collaborator } from './collaborator.entity';
@@ -19,7 +24,7 @@ export class CollaboratorService {
     @InjectRepository(Collaborator)
     private readonly collaboratorRepo: Repository<Collaborator>,
     private readonly requestService: VacationRequestService,
-
+    @Inject(forwardRef(() => PeriodService))
     private readonly periodService: PeriodService,
   ) {}
 

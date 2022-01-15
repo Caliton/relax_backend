@@ -8,8 +8,6 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { Role } from '../auth/role.decorator';
-import { UserRole } from '../user/user-role.enum';
 import { Collaborator } from './collaborator.entity';
 import { CollaboratorService } from './collaborator.service';
 import { BulkCollaboratorsDto } from './dto/collaboratorBulkDto';

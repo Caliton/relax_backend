@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PeriodModule } from '../period/period.module';
+import { PeriodService } from '../period/period.service';
 import { PeriodStatusModule } from '../periodStatus/period-status.module';
 import { VacationRequestModule } from '../vacationRequest/vacation-request.module';
 import { CollaboratorController } from './collaborator.controller';
@@ -9,7 +10,7 @@ import { CollaboratorService } from './collaborator.service';
 
 @Module({
   imports: [
-    PeriodModule,
+    forwardRef(() => PeriodModule),
     PeriodStatusModule,
     VacationRequestModule,
     TypeOrmModule.forFeature([Collaborator]),
