@@ -7,6 +7,7 @@ import {
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { UserRole } from 'src/modules/user/user-role.enum';
 import { Role } from '../role.decorator';
 import { RoleGuard } from '../role.guard';
@@ -19,6 +20,7 @@ import { JwtGuard } from './jwt.guard';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @ApiTags('authentication')
   @Post('login')
   async login(
     @Body(ValidationPipe) credentiaslsDto: CredentialsDto,
@@ -26,6 +28,7 @@ export class AuthController {
     return await this.authService.login(credentiaslsDto);
   }
 
+  @ApiTags('authentication')
   @Role(UserRole.ADMIN, UserRole.COLLABORATOR)
   @UseGuards(JwtGuard, RoleGuard)
   @Get('test-auth')

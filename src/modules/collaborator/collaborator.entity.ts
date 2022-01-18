@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -55,7 +56,7 @@ export class Collaborator {
   @OneToMany(() => VacationRequest, (request) => request.requestUser)
   requests: VacationRequest[];
 
-  @OneToMany(() => VacationRequest, (request) => request.approvalUser)
+  @ManyToMany(() => VacationRequest, (request) => request.approvalUser)
   approval: VacationRequest[];
 
   period: object;

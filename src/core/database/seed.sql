@@ -28,6 +28,7 @@ INSERT INTO global_settings (`key`,value) VALUES
 	 ('PARAM_LIMIT_DATE_GOVERNE','23'),
 	 ('MONTHS_IN_A_YEAR','12'),
 	 ('VERSION_SYSTEM','01.00.00'),
+	 ('APPROVAL_NUMBER','2'),
 	 ('MAX_DAYS_PER_PERIOD','30');
 
 

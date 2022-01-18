@@ -1,4 +1,11 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Collaborator } from '../collaborator/collaborator.entity';
 
 export enum RequestStatus {
@@ -24,8 +31,9 @@ export class VacationRequest {
   @ManyToOne(() => Collaborator, (collaborator) => collaborator.requests)
   requestUser: Collaborator;
 
-  @ManyToOne(() => Collaborator, (collaborator) => collaborator.approval)
-  approvalUser: Collaborator;
+  @ManyToMany(() => Collaborator, (collaborator) => collaborator.approval)
+  @JoinTable({ name: 'approval_gestures' })
+  approvalUser: Collaborator[];
 
   @Column({
     type: 'enum',
