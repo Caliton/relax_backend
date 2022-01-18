@@ -1,5 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { GlobalSettings } from 'src/modules/globalSettings/globalsettings.entity';
+import { GlobalSettingsService } from 'src/modules/globalSettings/globalsettings.service';
 import { UserPayloadDto } from 'src/modules/user/dto/user-payload.dto';
 import { UserService } from 'src/modules/user/user.service';
 import { CredentialsDto } from './dtos/credentials.dto';
@@ -9,6 +11,7 @@ import { ReturnSigninDto } from './dtos/return-signin.dto';
 export class AuthService {
   constructor(
     private readonly userService: UserService,
+    private readonly globalService: GlobalSettingsService,
     private jwtService: JwtService,
   ) {}
 
@@ -17,12 +20,17 @@ export class AuthService {
 
     if (!user) throw new UnauthorizedException('Usuário ou senha inválidos');
 
+    const version = await this.globalService.getVersion();
+
     const payload = {
       id: user.id,
       name: user.collaborator.name,
       username: user.login,
       role: user.role,
+      version: version.value,
     };
+
+    console.log(payload);
 
     return { token: this.jwtService.sign(payload), user };
   }

@@ -28,4 +28,12 @@ export class GlobalSettingsService {
     this.globalSettingsRepo.merge(globalSettings, data);
     return await this.globalSettingsRepo.save(globalSettings);
   }
+
+  async getVersion() {
+    const globalSettings = await this.globalSettingsRepo.findOne({
+      key: 'VERSION_SYSTEM',
+    });
+
+    return globalSettings;
+  }
 }
