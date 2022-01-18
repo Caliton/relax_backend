@@ -31,6 +31,7 @@ import { Holiday } from 'src/modules/holiday/holiday.entity';
         VacationRequest,
       ],
       synchronize: process.env.DEPLOY !== 'prod',
+      // migrations: ['src/core/database/migrations/*.js'],
     }),
   ],
 })
