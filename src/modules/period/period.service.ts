@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as moment from 'moment';
 import { MAX_DAYS_PER_PERIOD } from 'src/core/enumerators';
 import { handleErrors } from 'src/shared/utils/errors-helper';
@@ -61,6 +61,124 @@ export class PeriodService {
     };
 
     return { ...period };
+  }
+
+  public makePeriodRange(props: any) {
+    const { requests, hiringdate, year: yearProps } = props;
+
+    const year = yearProps || this.calculedYear(requests, hiringdate);
+
+    return this.calculeRangePeriod(hiringdate, year);
+  }
+
+  public makePeriodLimits(props: any) {
+    const { requests, hiringdate } = props;
+
+    const year = props.year || this.calculedYear(requests, hiringdate);
+
+    return this.calculeLimitsPeriod(hiringdate, year);
+  }
+
+  public makePeriodDaysAllowed(
+    requests: Array<VacationRequest>,
+    period: { start: string; end: string },
+  ) {
+    let daysAllowed = MAX_DAYS_PER_PERIOD;
+
+    const isOldPeriod =
+      parseInt(moment(period.end).format('YYYYMMDD')) <
+      parseInt(moment().format('YYYYMMDD'));
+
+    const isNewPeriod =
+      parseInt(moment(period.start).format('YYYYMMDD')) >
+      parseInt(moment().format('YYYYMMDD'));
+
+    const calculedDaysAllowed = Math.trunc(
+      moment().diff(period.start, 'M') * 2.5,
+    );
+
+    daysAllowed = isOldPeriod ? MAX_DAYS_PER_PERIOD : calculedDaysAllowed;
+
+    if (isNewPeriod) daysAllowed = 0;
+
+    let daysBalance = 0;
+    let daysScheduled = 0;
+    let daysEnjoyed = 0;
+
+    let letReserve = 0;
+
+    if (requests.length) {
+      // const requestAgroupYear = this.handleRequest(requests);
+
+      const requestScheduled = requests.filter(
+        (request) =>
+          request.startPeriod === period.start &&
+          request.status === RequestStatus.APPROVED,
+      );
+
+      const requestEnjoyed = requests.filter(
+        (request) =>
+          request.startPeriod === period.start &&
+          request.status === RequestStatus.APPROVED &&
+          parseInt(moment(request.finalDate).format('YYYYMMDD')) <
+            parseInt(moment().format('YYYYMMDD')),
+      );
+
+      if (!requestEnjoyed.length) {
+        daysEnjoyed = 0;
+      } else {
+        daysEnjoyed = requestEnjoyed
+          .map((item) => moment(item.finalDate).diff(item.startDate, 'day') + 1)
+          .reduce((a, b) => a + b);
+      }
+
+      letReserve = this.countDay(requestScheduled);
+    }
+
+    daysScheduled = letReserve - daysEnjoyed;
+    daysBalance = daysAllowed - letReserve;
+
+    return {
+      daysAllowed,
+      daysEnjoyed,
+      daysScheduled,
+      daysBalance,
+    };
+  }
+
+  public async makePeriodStatus(
+    limitEnterprise,
+    daysEnjoyed,
+    type: CollaboratorType,
+  ) {
+    const situations = await this.periodStatusService.findAll({
+      type,
+    });
+    let situation;
+    let gossip = 0;
+
+    if (daysEnjoyed === MAX_DAYS_PER_PERIOD) {
+      situation = situations
+        .sort((a, b) => a.limitMonths - b.limitMonths)
+        .slice(-1)[0];
+
+      return Promise.resolve(situation);
+    }
+
+    situations.forEach((status, index) => {
+      if (
+        gossip === 0 &&
+        moment() > moment(limitEnterprise).subtract(status.limitMonths, 'month')
+      ) {
+        situation = status;
+        gossip = 1;
+      }
+      if (gossip === 0 && situations.length === index + 1) {
+        situation = status;
+      }
+    });
+
+    return Promise.resolve(situation);
   }
 
   private reduceYearRequest(requests: Array<VacationRequest>, status) {
@@ -176,123 +294,5 @@ export class PeriodService {
     year = pendingDate.year;
 
     return year;
-  }
-
-  public makePeriodRange(props) {
-    const { requests, hiringdate } = props;
-
-    const year = props.year || this.calculedYear(requests, hiringdate);
-
-    return this.calculeRangePeriod(hiringdate, year);
-  }
-
-  public makePeriodLimits(props) {
-    const { requests, hiringdate } = props;
-
-    const year = props.year || this.calculedYear(requests, hiringdate);
-
-    return this.calculeLimitsPeriod(hiringdate, year);
-  }
-
-  public makePeriodDaysAllowed(
-    requests: Array<VacationRequest>,
-    period: { start: string; end: string },
-  ) {
-    let daysAllowed = MAX_DAYS_PER_PERIOD;
-
-    const isOldPeriod =
-      parseInt(moment(period.end).format('YYYYMMDD')) <
-      parseInt(moment().format('YYYYMMDD'));
-
-    const isNewPeriod =
-      parseInt(moment(period.start).format('YYYYMMDD')) >
-      parseInt(moment().format('YYYYMMDD'));
-
-    const calculedDaysAllowed = Math.trunc(
-      moment().diff(period.start, 'M') * 2.5,
-    );
-
-    daysAllowed = isOldPeriod ? MAX_DAYS_PER_PERIOD : calculedDaysAllowed;
-
-    if (isNewPeriod) daysAllowed = 0;
-
-    let daysBalance = 0;
-    let daysScheduled = 0;
-    let daysEnjoyed = 0;
-
-    let letReserve = 0;
-
-    if (requests.length) {
-      // const requestAgroupYear = this.handleRequest(requests);
-
-      const requestScheduled = requests.filter(
-        (request) =>
-          request.startPeriod === period.start &&
-          request.status === RequestStatus.APPROVED,
-      );
-
-      const requestEnjoyed = requests.filter(
-        (request) =>
-          request.startPeriod === period.start &&
-          request.status === RequestStatus.APPROVED &&
-          parseInt(moment(request.finalDate).format('YYYYMMDD')) <
-            parseInt(moment().format('YYYYMMDD')),
-      );
-
-      if (!requestEnjoyed.length) {
-        daysEnjoyed = 0;
-      } else {
-        daysEnjoyed = requestEnjoyed
-          .map((item) => moment(item.finalDate).diff(item.startDate, 'day') + 1)
-          .reduce((a, b) => a + b);
-      }
-
-      letReserve = this.countDay(requestScheduled);
-    }
-
-    daysScheduled = letReserve - daysEnjoyed;
-    daysBalance = daysAllowed - letReserve;
-
-    return {
-      daysAllowed,
-      daysEnjoyed,
-      daysScheduled,
-      daysBalance,
-    };
-  }
-
-  public async makePeriodStatus(
-    limitEnterprise,
-    daysEnjoyed,
-    type: CollaboratorType,
-  ) {
-    const situations = await this.periodStatusService.findAll({
-      type,
-    });
-    let situation;
-    let gossip = 0;
-
-    if (daysEnjoyed === MAX_DAYS_PER_PERIOD) {
-      situation = situations
-        .sort((a, b) => a.limitMonths - b.limitMonths)
-        .slice(-1)[0];
-
-      return Promise.resolve(situation);
-    }
-
-    situations.forEach((status, index) => {
-      if (
-        gossip === 0 &&
-        moment() > moment(limitEnterprise).subtract(status.limitMonths, 'month')
-      ) {
-        situation = status;
-        gossip = 1;
-      }
-      if (gossip === 0 && situations.length === index + 1) {
-        situation = status;
-      }
-    });
-
-    return Promise.resolve(situation);
   }
 }
