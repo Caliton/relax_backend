@@ -1,6 +1,7 @@
-import { RequestStatus } from '../vacation-request.entity';
+import { RequestStatus } from '../request-status.enum';
 
 export class RequestStatusDto {
-  readonly id: string;
+  readonly vacationRequestId: string;
+  readonly approvalId: string;
   readonly status: RequestStatus;
 }

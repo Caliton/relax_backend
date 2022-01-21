@@ -1,13 +1,14 @@
 import {
   Column,
   Entity,
-  ManyToMany,
   ManyToOne,
   OneToMany,
+  PrimaryColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Departament } from '../departament/departament.entity';
 import { Profile } from '../profile/profile.entity';
+import { ApprovalVacation } from '../vacationRequest/approval-vacation.entity';
 import { VacationRequest } from '../vacationRequest/vacation-request.entity';
 
 export enum CollaboratorType {
@@ -23,10 +24,10 @@ export class Collaborator {
   @Column()
   name: string;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ unique: true })
   register: string;
 
   @Column({ type: 'date' })
@@ -56,10 +57,8 @@ export class Collaborator {
   @OneToMany(() => VacationRequest, (request) => request.requestUser)
   requests: VacationRequest[];
 
-  @ManyToMany(() => VacationRequest, (request) => request.approvalUser)
-  approval: VacationRequest[];
-
-  period: object;
+  @OneToMany(() => ApprovalVacation, (approvalVacat) => approvalVacat.approval)
+  approvalVacation: ApprovalVacation[];
 
   @Column({
     type: 'enum',

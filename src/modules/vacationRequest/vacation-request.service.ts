@@ -1,27 +1,43 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { request } from 'http';
 import * as moment from 'moment';
-import { MAX_DAYS_PER_PERIOD } from 'src/core/enumerators';
 import { Repository } from 'typeorm';
+import { CollaboratorService } from '../collaborator/collaborator.service';
+import { GlobalSettingsService } from '../globalSettings/globalsettings.service';
+import { PeriodService } from '../period/period.service';
+import { UserRole } from '../user/user-role.enum';
+import { ApprovalVacation } from './approval-vacation.entity';
 import { RequestStatusDto } from './dto/request-status.dto';
-import { RequestStatus, VacationRequest } from './vacation-request.entity';
+import { VacationRequest } from './vacation-request.entity';
 
 @Injectable()
 export class VacationRequestService {
   constructor(
     @InjectRepository(VacationRequest)
     private readonly vacationRequestRepo: Repository<VacationRequest>,
+    @InjectRepository(ApprovalVacation)
+    private readonly approvalVacationRepo: Repository<ApprovalVacation>,
+    @Inject(forwardRef(() => PeriodService))
+    private readonly periodService: PeriodService,
+    private readonly globalSettingService: GlobalSettingsService,
+    @Inject(forwardRef(() => CollaboratorService))
+    private readonly collaboratorService: CollaboratorService,
   ) {}
 
-  async findAll() {
+  public async findAll() {
     const requests = await this.vacationRequestRepo.find({
-      relations: ['requestUser'],
+      relations: ['requestUser', 'approvalVacation'],
     });
 
     return requests.map((e) => ({
       ...e,
-      ...this.makePeriodDaysAllowed(requests, {
+      ...this.periodService.makePeriodDaysAllowed(requests, {
         start: e.startPeriod,
         end: moment(e.startPeriod)
           .year(moment(e.startPeriod).year() + 1)
@@ -30,19 +46,70 @@ export class VacationRequestService {
     }));
   }
 
-  async alterStatus(requestStatus: RequestStatusDto) {
+  public async alterStatus(requestStatus: RequestStatusDto) {
     try {
-      const request = await this.vacationRequestRepo.findOneOrFail(
-        requestStatus.id,
-      );
+      const { vacationRequestId, approvalId } = requestStatus;
 
-      request.status = requestStatus.status;
+      const canApproval = await this.permissionApproval(approvalId);
 
-      return await this.vacationRequestRepo.save(request);
+      if (!canApproval) {
+        throw new UnauthorizedException(
+          'Usuário não tem permissão de alterar status',
+        );
+      }
+
+      const approvalNumberRequired =
+        await this.globalSettingService.getSettings('APPROVAL_NUMBER');
+
+      const approvalVacations = await this.approvalVacationRepo.find({
+        where: { vacationRequest: vacationRequestId },
+      });
+
+      if (
+        approvalVacations.length > 0 &&
+        approvalVacations.length <= parseInt(approvalNumberRequired)
+      ) {
+        let approvalVacation = approvalVacations.find(
+          (av) => av.approval.id === approvalId,
+        );
+
+        if (approvalVacation) approvalVacation.status = requestStatus.status;
+        else {
+          approvalVacation = new ApprovalVacation();
+
+          approvalVacation.approval.id = approvalId;
+          approvalVacation.vacationRequest.id = vacationRequestId;
+          approvalVacation.itSaw = true;
+          approvalVacation.status = requestStatus.status;
+        }
+
+        return await this.approvalVacationRepo.save(approvalVacation);
+      } else if (!approvalVacations.length) {
+        const newApprovationVacation = new ApprovalVacation();
+
+        newApprovationVacation.approval.id = approvalId;
+        newApprovationVacation.vacationRequest.id = vacationRequestId;
+        newApprovationVacation.itSaw = true;
+        newApprovationVacation.status = requestStatus.status;
+
+        return await this.approvalVacationRepo.save(newApprovationVacation);
+      }
     } catch (e) {}
   }
 
-  async findOneOrFail(id: string) {
+  private async permissionApproval(id: string) {
+    try {
+      const subject = await this.collaboratorService.investigateCollaborator(
+        id,
+      );
+
+      const allowedRoles = [UserRole.HR, UserRole.MANAGER, UserRole.ADMIN];
+
+      return allowedRoles.includes(subject.role);
+    } catch (e) {}
+  }
+
+  public async findOneOrFail(id: string) {
     try {
       return await this.vacationRequestRepo.findOneOrFail(id);
     } catch (error) {
@@ -50,96 +117,33 @@ export class VacationRequestService {
     }
   }
 
-  private makePeriodDaysAllowed(
-    requests: Array<VacationRequest>,
-    period: { start: string; end: string },
-  ) {
-    let daysAllowed = MAX_DAYS_PER_PERIOD;
-
-    const isOldPeriod =
-      parseInt(moment(period.end).format('YYYYMMDD')) <
-      parseInt(moment().format('YYYYMMDD'));
-
-    const isNewPeriod =
-      parseInt(moment(period.start).format('YYYYMMDD')) >
-      parseInt(moment().format('YYYYMMDD'));
-
-    const calculedDaysAllowed = Math.trunc(
-      moment().diff(period.start, 'M') * 2.5,
-    );
-
-    daysAllowed = isOldPeriod ? MAX_DAYS_PER_PERIOD : calculedDaysAllowed;
-
-    if (isNewPeriod) daysAllowed = 0;
-
-    let daysBalance = 0;
-    let daysScheduled = 0;
-    let daysEnjoyed = 0;
-
-    let letReserve = 0;
-
-    if (requests.length) {
-      // const requestAgroupYear = this.handleRequest(requests);
-
-      const requestScheduled = requests.filter(
-        (request) =>
-          request.startPeriod === period.start &&
-          request.status === RequestStatus.APPROVED,
-      );
-
-      const requestEnjoyed = requests.filter(
-        (request) =>
-          request.startPeriod === period.start &&
-          request.status === RequestStatus.APPROVED &&
-          parseInt(moment(request.finalDate).format('YYYYMMDD')) <
-            parseInt(moment().format('YYYYMMDD')),
-      );
-
-      if (!requestEnjoyed.length) {
-        daysEnjoyed = 0;
-      } else {
-        daysEnjoyed = requestEnjoyed
-          .map((item) => moment(item.finalDate).diff(item.startDate, 'day') + 1)
-          .reduce((a, b) => a + b);
-      }
-
-      letReserve = this.countDay(requestScheduled);
-    }
-
-    daysScheduled = letReserve - daysEnjoyed;
-    daysBalance = daysAllowed - letReserve;
-
-    return {
-      daysAllowed,
-      daysEnjoyed,
-      daysScheduled,
-      daysBalance,
-    };
-  }
-
-  private countDay(list: any) {
-    if (!list || !list.length) return 0;
-    return list
-      .map(
-        (item: any) => moment(item.finalDate).diff(item.startDate, 'day') + 1,
-      )
-      .reduce((a: any, b: any) => a + b);
-  }
-
-  async create(data: VacationRequest) {
+  public async create(data: VacationRequest) {
     return await this.vacationRequestRepo.save(
       this.vacationRequestRepo.create(data),
     );
   }
 
-  async update(id: string, data: VacationRequest) {
+  // public async getVacationRequests() {
+  //   try {
+  //     const teste = await this.vacationRequestRepo.find({ select: {}})
+  //     return {};
+  //   } catch (error) {}
+  // }
+
+  public async createApprovationVacation(data: ApprovalVacation) {
+    return await this.approvalVacationRepo.save(
+      this.approvalVacationRepo.create(data),
+    );
+  }
+
+  public async update(id: string, data: VacationRequest) {
     const profile = await this.findOneOrFail(id);
 
     this.vacationRequestRepo.merge(profile, data);
     return await this.vacationRequestRepo.save(profile);
   }
 
-  async deleteById(id: string) {
+  public async deleteById(id: string) {
     await this.vacationRequestRepo.delete(id);
   }
 }

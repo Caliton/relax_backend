@@ -4,26 +4,28 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
 import { Collaborator } from './collaborator.entity';
 import * as moment from 'moment';
 import { CollaboratorBulkDto } from './dto/collaboratorBulkDto';
 import { FilterCollaboratorDto } from './dto/filter-collaborator.dto';
 import { handleErrors } from 'src/shared/utils/errors-helper';
-import {
-  RequestStatus,
-  VacationRequest,
-} from '../vacationRequest/vacation-request.entity';
+import { VacationRequest } from '../vacationRequest/vacation-request.entity';
 import { VacationRequestService } from '../vacationRequest/vacation-request.service';
 import { PeriodService } from '../period/period.service';
+import { RequestStatus } from '../vacationRequest/request-status.enum';
+import { UserService } from '../user/user.service';
+import { ApprovalVacation } from '../vacationRequest/approval-vacation.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class CollaboratorService {
   constructor(
     @InjectRepository(Collaborator)
     private readonly collaboratorRepo: Repository<Collaborator>,
+    @Inject(forwardRef(() => VacationRequestService))
     private readonly requestService: VacationRequestService,
+    private readonly userService: UserService,
     @Inject(forwardRef(() => PeriodService))
     private readonly periodService: PeriodService,
   ) {}
@@ -51,7 +53,7 @@ export class CollaboratorService {
           hiringdate,
         });
 
-        const { daysEnjoyed } = this.periodService.makePeriodDaysAllowed(
+        const { daysEnjoyed } = await this.periodService.makePeriodDaysAllowed(
           requests,
           period,
         );
@@ -100,7 +102,7 @@ export class CollaboratorService {
     });
 
     const { daysAllowed, daysEnjoyed, daysBalance } =
-      this.periodService.makePeriodDaysAllowed(requests, { start, end });
+      await this.periodService.makePeriodDaysAllowed(requests, { start, end });
 
     const situation = await this.periodService.makePeriodStatus(
       limitEnterprise,
@@ -123,32 +125,32 @@ export class CollaboratorService {
     return { ...period };
   }
 
-  async findOneOrFail(id: string) {
+  public async findOneOrFail(id: string) {
     try {
       return await this.collaboratorRepo.findOneOrFail(id, {
-        relations: ['requests'],
+        relations: ['requests', 'requests.approvalVacation'],
       });
     } catch (error) {
       throw new NotFoundException(error.message);
     }
   }
 
-  async create(data: Collaborator) {
+  public async create(data: Collaborator) {
     return await this.collaboratorRepo.save(this.collaboratorRepo.create(data));
   }
 
-  async update(id: string, data: Collaborator) {
+  public async update(id: string, data: Collaborator) {
     const collaborator = await this.findOneOrFail(id);
 
     this.collaboratorRepo.merge(collaborator, data);
     return await this.collaboratorRepo.save(collaborator);
   }
 
-  async deleteById(id: string) {
+  public async deleteById(id: string) {
     await this.collaboratorRepo.delete(id);
   }
 
-  async createManyCollaborators(collaborators: CollaboratorBulkDto[]) {
+  public async createManyCollaborators(collaborators: CollaboratorBulkDto[]) {
     const collaboratorsDatabase = await this.collaboratorRepo.find();
 
     const collaboratorsContains = collaborators.filter((a) =>
@@ -177,7 +179,7 @@ export class CollaboratorService {
         const colab = new Collaborator();
         colab.id = a.id;
 
-        const vacationOk: VacationRequest = new VacationRequest();
+        const vacationOk = new VacationRequest();
 
         const startDate = moment(a.hiringdate).year(a.periodOk);
         const finalDate = startDate.clone().add(29, 'day');
@@ -186,11 +188,11 @@ export class CollaboratorService {
         vacationOk.finalDate = finalDate.format('YYYY-MM-DD');
         vacationOk.startPeriod = startDate.format('YYYY-MM-DD');
         vacationOk.requestUser = colab;
-        vacationOk.status = RequestStatus.APPROVED;
-        vacationOk.approvalUser = null;
+        vacationOk.cameImported = true;
 
         if (a.daysEnjoyed > 0) {
-          const vacationNo: VacationRequest = new VacationRequest();
+          const vacationNo = new VacationRequest();
+          const approvalVacationNo = new ApprovalVacation();
           const startDateNo = moment(a.hiringdate).year(a.periodOk + 1);
           const finalDateNo = startDateNo.clone().add(a.daysEnjoyed, 'day');
 
@@ -198,15 +200,31 @@ export class CollaboratorService {
           vacationNo.finalDate = finalDateNo.format('YYYY-MM-DD');
           vacationNo.startPeriod = startDateNo.format('YYYY-MM-DD');
           vacationNo.requestUser = colab;
-          vacationNo.status = RequestStatus.APPROVED;
-          vacationNo.approvalUser = null;
-          await this.requestService.create(vacationNo);
-        }
+          vacationOk.cameImported = false;
 
-        await this.requestService.create(vacationOk);
+          const { id: idVacationNo } = await this.requestService.create(
+            vacationNo,
+          );
+
+          approvalVacationNo.status = RequestStatus.APPROVED;
+          approvalVacationNo.vacationRequest.id = idVacationNo;
+
+          this.requestService.createApprovationVacation(approvalVacationNo);
+        }
       });
     }
 
     return newColabInserted;
+  }
+
+  public async investigateCollaborator(id: string) {
+    try {
+      const { role } = await this.userService.findOneOrFail(id);
+      const collaborator = await this.collaboratorRepo.findOneOrFail(id, {
+        relations: ['users'],
+      });
+
+      return { ...collaborator, role };
+    } catch (e) {}
   }
 }

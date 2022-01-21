@@ -10,11 +10,11 @@ export class GlobalSettingsService {
     private readonly globalSettingsRepo: Repository<GlobalSettings>,
   ) {}
 
-  async findAll() {
+  public async findAll() {
     return await this.globalSettingsRepo.find();
   }
 
-  async findOneOrFail(id: string) {
+  public async findOneOrFail(id: string) {
     try {
       return await this.globalSettingsRepo.findOneOrFail(id);
     } catch (error) {
@@ -22,18 +22,26 @@ export class GlobalSettingsService {
     }
   }
 
-  async update(id: string, data: GlobalSettings) {
+  public async update(id: string, data: GlobalSettings) {
     const globalSettings = await this.findOneOrFail(id);
 
     this.globalSettingsRepo.merge(globalSettings, data);
     return await this.globalSettingsRepo.save(globalSettings);
   }
 
-  async getVersion() {
+  public async getVersion() {
     const globalSettings = await this.globalSettingsRepo.findOne({
       key: 'VERSION_SYSTEM',
     });
 
     return globalSettings;
+  }
+
+  public async getSettings(setting: string) {
+    const globalSettings = await this.globalSettingsRepo.findOne({
+      key: setting.toUpperCase(),
+    });
+
+    return globalSettings.value;
   }
 }

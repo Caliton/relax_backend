@@ -1,23 +1,20 @@
 import {
   Column,
   Entity,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Collaborator } from '../collaborator/collaborator.entity';
-
-export enum RequestStatus {
-  REQUESTED = 'requested',
-  APPROVED = 'approved',
-  REFUSED = 'refused',
-}
+import { ApprovalVacation } from './approval-vacation.entity';
 
 @Entity()
 export class VacationRequest {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ type: 'boolean', default: false })
+  cameImported: boolean;
 
   @Column({ type: 'date' })
   startDate: string;
@@ -31,14 +28,9 @@ export class VacationRequest {
   @ManyToOne(() => Collaborator, (collaborator) => collaborator.requests)
   requestUser: Collaborator;
 
-  @ManyToMany(() => Collaborator, (collaborator) => collaborator.approval)
-  @JoinTable({ name: 'approval_gestures' })
-  approvalUser: Collaborator[];
-
-  @Column({
-    type: 'enum',
-    enum: RequestStatus,
-    default: RequestStatus.REQUESTED,
-  })
-  status: RequestStatus;
+  @OneToMany(
+    () => ApprovalVacation,
+    (approvalVacat) => approvalVacat.vacationRequest,
+  )
+  approvalVacation: ApprovalVacation[];
 }

@@ -8,6 +8,7 @@ import { Profile } from 'src/modules/profile/profile.entity';
 import { VacationRequest } from 'src/modules/vacationRequest/vacation-request.entity';
 import { User } from 'src/modules/user/user.entity';
 import { Holiday } from 'src/modules/holiday/holiday.entity';
+import { ApprovalVacation } from 'src/modules/vacationRequest/approval-vacation.entity';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { Holiday } from 'src/modules/holiday/holiday.entity';
         GlobalSettings,
         Holiday,
         PeriodStatus,
+        ApprovalVacation,
         Profile,
         User,
         VacationRequest,
