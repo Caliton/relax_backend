@@ -20,6 +20,11 @@ Content-Type: application/json
 
 
 ### aloisio
+GET http://localhost:3000/api/user/b6727d52-f806-494f-9419-40b495c0c4a7
+
+
+
+### aloisio
 GET http://localhost:3000/api/period/696b530a-8f3e-4ab4-a01f-c0d392f967b7/collaborator/
 
 

@@ -23,7 +23,11 @@ export class UserService {
 
   async findOneOrFail(id: string) {
     try {
-      return await this.userRepo.findOneOrFail(id);
+      const user = await this.userRepo.findOneOrFail(id);
+
+      console.log(user);
+
+      return user;
     } catch (error) {
       throw new NotFoundException(error.message);
     }
@@ -38,6 +42,18 @@ export class UserService {
     } catch (e) {
       console.log(e);
     }
+  }
+
+  async findUserCollaborator(id: string) {
+    try {
+      console.log('oi');
+
+      const a = await this.userRepo.findOneOrFail(id, {
+        relations: ['collaborator'],
+      });
+
+      return a;
+    } catch (e) {}
   }
 
   async create(data: User) {

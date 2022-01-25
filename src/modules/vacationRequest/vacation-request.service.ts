@@ -8,11 +8,13 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import * as moment from 'moment';
 import { Repository } from 'typeorm';
+import { Collaborator } from '../collaborator/collaborator.entity';
 import { CollaboratorService } from '../collaborator/collaborator.service';
 import { GlobalSettingsService } from '../globalSettings/globalsettings.service';
 import { PeriodService } from '../period/period.service';
 import { UserRole } from '../user/user-role.enum';
 import { ApprovalVacation } from './approval-vacation.entity';
+import { ApprovalVacationCreateDto } from './dto/approval-vacation-create.dto';
 import { RequestStatusDto } from './dto/request-status.dto';
 import { VacationRequest } from './vacation-request.entity';
 
@@ -48,53 +50,80 @@ export class VacationRequestService {
 
   public async alterStatus(requestStatus: RequestStatusDto) {
     try {
-      const { vacationRequestId, approvalId } = requestStatus;
+      const { vacationRequestId, approvalId, status } = requestStatus;
 
-      const canApproval = await this.permissionApproval(approvalId);
+      const canApprove = await this.permissionApproval(approvalId);
 
-      if (!canApproval) {
+      if (!canApprove) {
         throw new UnauthorizedException(
           'Usuário não tem permissão de alterar status',
         );
       }
 
-      const approvalNumberRequired =
-        await this.globalSettingService.getSettings('APPROVAL_NUMBER');
+      const approvalNumberRequired = parseInt(
+        await this.globalSettingService.getSettings('APPROVAL_NUMBER'),
+      );
 
       const approvalVacations = await this.approvalVacationRepo.find({
+        relations: ['approval'],
         where: { vacationRequest: vacationRequestId },
       });
 
-      if (
-        approvalVacations.length > 0 &&
-        approvalVacations.length <= parseInt(approvalNumberRequired)
-      ) {
-        let approvalVacation = approvalVacations.find(
-          (av) => av.approval.id === approvalId,
-        );
+      if (!approvalVacations.length) {
+        const collaborator = new Collaborator();
+        collaborator.id = canApprove;
 
-        if (approvalVacation) approvalVacation.status = requestStatus.status;
-        else {
-          approvalVacation = new ApprovalVacation();
+        const vacationRequest = new VacationRequest();
+        vacationRequest.id = vacationRequestId;
 
-          approvalVacation.approval.id = approvalId;
-          approvalVacation.vacationRequest.id = vacationRequestId;
-          approvalVacation.itSaw = true;
-          approvalVacation.status = requestStatus.status;
-        }
+        const newApproval = {
+          collaborator,
+          vacationRequest,
+          status,
+        };
 
-        return await this.approvalVacationRepo.save(approvalVacation);
-      } else if (!approvalVacations.length) {
-        const newApprovationVacation = new ApprovalVacation();
+        return await this.factoryApprovalVacation(newApproval);
+      }
 
-        newApprovationVacation.approval.id = approvalId;
-        newApprovationVacation.vacationRequest.id = vacationRequestId;
-        newApprovationVacation.itSaw = true;
-        newApprovationVacation.status = requestStatus.status;
+      const isEditApproval = approvalVacations.find(
+        (av) => av.approval.id === canApprove,
+      );
 
-        return await this.approvalVacationRepo.save(newApprovationVacation);
+      if (isEditApproval) {
+        isEditApproval.status = status;
+        return await this.updateApproval(isEditApproval.id, isEditApproval);
+      }
+
+      if (approvalVacations.length < approvalNumberRequired) {
+        const collaborator = new Collaborator();
+        collaborator.id = canApprove;
+
+        const vacationRequest = new VacationRequest();
+        vacationRequest.id = vacationRequestId;
+
+        const newApproval = {
+          collaborator,
+          vacationRequest,
+          status,
+        };
+
+        return await this.factoryApprovalVacation(newApproval);
       }
     } catch (e) {}
+  }
+
+  private async factoryApprovalVacation(data: ApprovalVacationCreateDto) {
+    try {
+      const { collaborator, vacationRequest, status } = data;
+      const newApprovationVacation = new ApprovalVacation();
+
+      newApprovationVacation.approval = collaborator;
+      newApprovationVacation.vacationRequest = vacationRequest;
+      newApprovationVacation.itSaw = true;
+      newApprovationVacation.status = status;
+
+      return await this.createApprovationVacation(newApprovationVacation);
+    } catch (error) {}
   }
 
   private async permissionApproval(id: string) {
@@ -105,8 +134,10 @@ export class VacationRequestService {
 
       const allowedRoles = [UserRole.HR, UserRole.MANAGER, UserRole.ADMIN];
 
-      return allowedRoles.includes(subject.role);
-    } catch (e) {}
+      return allowedRoles.includes(subject.role) ? subject.id : false;
+    } catch (e) {
+      throw new NotFoundException(e.message);
+    }
   }
 
   public async findOneOrFail(id: string) {
@@ -117,18 +148,19 @@ export class VacationRequestService {
     }
   }
 
+  public async findOneOrFailApprovalVacation(id: string) {
+    try {
+      return await this.approvalVacationRepo.findOneOrFail(id);
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
+  }
+
   public async create(data: VacationRequest) {
     return await this.vacationRequestRepo.save(
       this.vacationRequestRepo.create(data),
     );
   }
-
-  // public async getVacationRequests() {
-  //   try {
-  //     const teste = await this.vacationRequestRepo.find({ select: {}})
-  //     return {};
-  //   } catch (error) {}
-  // }
 
   public async createApprovationVacation(data: ApprovalVacation) {
     return await this.approvalVacationRepo.save(
@@ -141,6 +173,13 @@ export class VacationRequestService {
 
     this.vacationRequestRepo.merge(profile, data);
     return await this.vacationRequestRepo.save(profile);
+  }
+
+  public async updateApproval(id: string, data: ApprovalVacation) {
+    const approval = await this.findOneOrFailApprovalVacation(id);
+
+    this.approvalVacationRepo.merge(approval, data);
+    return await this.approvalVacationRepo.save(approval);
   }
 
   public async deleteById(id: string) {

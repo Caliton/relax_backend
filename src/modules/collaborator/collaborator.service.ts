@@ -128,7 +128,11 @@ export class CollaboratorService {
   public async findOneOrFail(id: string) {
     try {
       return await this.collaboratorRepo.findOneOrFail(id, {
-        relations: ['requests', 'requests.approvalVacation'],
+        relations: [
+          'requests',
+          'requests.approvalVacation',
+          'requests.approvalVacation.approval',
+        ],
       });
     } catch (error) {
       throw new NotFoundException(error.message);
@@ -219,12 +223,14 @@ export class CollaboratorService {
 
   public async investigateCollaborator(id: string) {
     try {
-      const { role } = await this.userService.findOneOrFail(id);
-      const collaborator = await this.collaboratorRepo.findOneOrFail(id, {
-        relations: ['users'],
-      });
+      console.log(id);
+
+      const { collaborator, role } =
+        await this.userService.findUserCollaborator(id);
 
       return { ...collaborator, role };
-    } catch (e) {}
+    } catch (e) {
+      throw new NotFoundException(e.message);
+    }
   }
 }

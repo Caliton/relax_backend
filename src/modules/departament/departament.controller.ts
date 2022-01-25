@@ -16,25 +16,25 @@ export class DepartamentController {
   constructor(private readonly departamentService: DepartamentService) {}
 
   @ApiBearerAuth()
-  @ApiTags('depatarment')
+  @ApiTags('departament')
   @Get()
   async index(): Promise<Departament[]> {
     return this.departamentService.findAll();
   }
 
-  @ApiTags('depatarment')
+  @ApiTags('departament')
   @Post()
   async create(@Body() body: Departament) {
     return await this.departamentService.create(body);
   }
 
-  @ApiTags('depatarment')
+  @ApiTags('departament')
   @Put(':id')
   async update(@Param('id') id: string, @Body() body: Departament) {
     return await this.departamentService.update(id, body);
   }
 
-  @ApiTags('depatarment')
+  @ApiTags('departament')
   @Delete(':id')
   async destroy(@Param('id') id: string) {
     await this.departamentService.deleteById(id);

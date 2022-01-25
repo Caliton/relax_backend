@@ -21,6 +21,12 @@ export class UserController {
     return this.userService.findAll();
   }
 
+  @ApiTags('user')
+  @Get(':id')
+  async getRequests(@Param('id') id: string) {
+    return await this.userService.findOneOrFail(id);
+  }
+
   @Post()
   @ApiTags('user')
   async create(@Body() body: User) {
