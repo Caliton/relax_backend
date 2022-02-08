@@ -31,3 +31,7 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 ```
+
+## docker
+
+docker-compose up -d

@@ -191,3 +191,4 @@ case "$PROTOCOL" in
 esac
 
 wait_for "$@"
+fi

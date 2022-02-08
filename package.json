@@ -23,6 +23,7 @@
     "seed": "ts-node -r tsconfig-paths/register src/core/database/seeds/seeds.ts"
   },
   "dependencies": {
+    "@nestjs-modules/mailer": "^1.6.1",
     "@nestjs/axios": "0.0.1",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^1.0.1",
@@ -40,9 +41,11 @@
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
     "dayjs": "^1.9.1",
+    "handlebars": "^4.7.7",
     "moment": "^2.29.1",
     "mysql2": "^2.3.2",
     "nest-winston": "^1.4.0",
+    "nodemailer": "^6.7.2",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "reflect-metadata": "^0.1.13",
@@ -59,6 +62,7 @@
     "@types/express": "^4.17.13",
     "@types/jest": "^27.0.1",
     "@types/node": "^16.0.0",
+    "@types/nodemailer": "^6.4.4",
     "@types/passport": "^1.0.7",
     "@types/passport-jwt": "^3.0.6",
     "@types/supertest": "^2.0.11",

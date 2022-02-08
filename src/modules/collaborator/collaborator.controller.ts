@@ -5,10 +5,14 @@ import {
   Get,
   Param,
   Post,
+  Response,
   Put,
   Query,
+  StreamableFile,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { createReadStream } from 'fs';
+import { join } from 'path';
 import { Collaborator } from './collaborator.entity';
 import { CollaboratorService } from './collaborator.service';
 import { BulkCollaboratorsDto } from './dto/collaboratorBulkDto';
@@ -22,6 +26,21 @@ export class CollaboratorController {
   @Get()
   async index(@Query() query: FilterCollaboratorDto): Promise<any> {
     return await this.collaboratorService.findAll(query);
+  }
+
+  @ApiTags('collaborator')
+  @Get('modelimport')
+  getFile(@Response({ passthrough: true }) res): StreamableFile {
+    const file = createReadStream(
+      join(process.cwd(), 'collaborators_model.xlsx'),
+    );
+    res.set({
+      'Content-Type':
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition':
+        'attachment; filename="Modelo de Colaboradores.xlsx"',
+    });
+    return new StreamableFile(file);
   }
 
   @ApiTags('collaborator')
