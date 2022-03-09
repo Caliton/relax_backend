@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { GlobalSettings } from 'src/modules/globalSettings/globalsettings.entity';
+// import { GlobalSettings } from 'src/modules/globalSettings/globalsettings.entity';
 import { GlobalSettingsService } from 'src/modules/globalSettings/globalsettings.service';
 import { UserPayloadDto } from 'src/modules/user/dto/user-payload.dto';
 import { UserService } from 'src/modules/user/user.service';
