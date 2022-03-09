@@ -9,10 +9,15 @@ import {
   Put,
   Query,
   StreamableFile,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as fs from 'fs';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { createReadStream } from 'fs';
 import { join } from 'path';
+import readXlsxFile from 'read-excel-file';
 import { Collaborator } from './collaborator.entity';
 import { CollaboratorService } from './collaborator.service';
 import { BulkCollaboratorsDto } from './dto/collaboratorBulkDto';
@@ -29,7 +34,7 @@ export class CollaboratorController {
   }
 
   @ApiTags('collaborator')
-  @Get('modelimport')
+  @Get('export')
   getFile(@Response({ passthrough: true }) res): StreamableFile {
     const file = createReadStream(
       join(process.cwd(), 'collaborators_model.xlsx'),
@@ -41,6 +46,31 @@ export class CollaboratorController {
         'attachment; filename="Modelo de Colaboradores.xlsx"',
     });
     return new StreamableFile(file);
+  }
+
+  @ApiTags('collaborator')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        comment: { type: 'string' },
+        outletId: { type: 'integer' },
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    // console.log(file);
+    // readXlsxFile(fs.writeFileSync(file)).then((rows) => {
+    //   // `rows` is an array of rows
+    //   // each row being an array of cells.
+    // });
   }
 
   @ApiTags('collaborator')
