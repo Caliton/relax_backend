@@ -13,11 +13,10 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import * as fs from 'fs';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { createReadStream } from 'fs';
 import { join } from 'path';
-import readXlsxFile from 'read-excel-file';
+import { readXlsx } from 'src/shared/utils/read-xlsx';
 import { Collaborator } from './collaborator.entity';
 import { CollaboratorService } from './collaborator.service';
 import { BulkCollaboratorsDto } from './dto/collaboratorBulkDto';
@@ -65,12 +64,23 @@ export class CollaboratorController {
   })
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
-    // console.log(file);
-    // readXlsxFile(fs.writeFileSync(file)).then((rows) => {
-    //   // `rows` is an array of rows
-    //   // each row being an array of cells.
-    // });
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    try {
+      const response =
+        await this.collaboratorService.createManyCollaboratorsXlsx(file.buffer);
+
+      return {
+        message: `${response.length} ${
+          response.length === 1
+            ? 'Colaborador cadastrado'
+            : 'Colaboradores cadastrados'
+        }`,
+      };
+    } catch (e) {
+      console.log(e);
+
+      return { message: 'Deu merda' };
+    }
   }
 
   @ApiTags('collaborator')
@@ -79,29 +89,29 @@ export class CollaboratorController {
     return await this.collaboratorService.findAllCollaborators(query);
   }
 
-  // @Role(UserRole.ADMIN, UserRole.SUPERVISOR)
-  @ApiTags('collaborator')
-  @Post('import')
-  async createMany(@Body() collaborators: BulkCollaboratorsDto) {
-    console.log(collaborators);
+  // // @Role(UserRole.ADMIN, UserRole.SUPERVISOR)
+  // @ApiTags('collaborator')
+  // @Post('import')
+  // async createMany(@Body() collaborators: BulkCollaboratorsDto) {
+  //   console.log(collaborators);
 
-    const response = await this.collaboratorService.createManyCollaborators(
-      collaborators.data,
-    );
+  //   const response = await this.collaboratorService.createManyCollaborators(
+  //     collaborators.data,
+  //   );
 
-    if (!response.length)
-      return {
-        message: 'Os colaboradores desta lista já encontram-se cadastrados!',
-      };
+  //   if (!response.length)
+  //     return {
+  //       message: 'Os colaboradores desta lista já encontram-se cadastrados!',
+  //     };
 
-    return {
-      message: `${response.length} ${
-        response.length === 1
-          ? 'Colaborador cadastrado'
-          : 'Colaboradores cadastrados'
-      }`,
-    };
-  }
+  //   return {
+  //     message: `${response.length} ${
+  //       response.length === 1
+  //         ? 'Colaborador cadastrado'
+  //         : 'Colaboradores cadastrados'
+  //     }`,
+  //   };
+  // }
 
   @ApiTags('collaborator')
   @Post()

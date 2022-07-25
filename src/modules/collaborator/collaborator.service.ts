@@ -17,6 +17,7 @@ import { RequestStatus } from '../vacationRequest/request-status.enum';
 import { UserService } from '../user/user.service';
 import { ApprovalVacation } from '../vacationRequest/approval-vacation.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { readXlsx, convertDateXlsx } from 'src/shared/utils/read-xlsx';
 
 @Injectable()
 export class CollaboratorService {
@@ -219,6 +220,98 @@ export class CollaboratorService {
     }
 
     return newColabInserted;
+  }
+
+  public async createManyCollaboratorsXlsx(file: Buffer) {
+    const collaboratorsImportat = this.handleXlsx2Json(file);
+
+    const collaboratorsDatabase = await this.collaboratorRepo.find();
+
+    const collaboratorsContains = collaboratorsImportat.filter(
+      (a: CollaboratorBulkDto) =>
+        collaboratorsDatabase.some((b) => a.register === b.register),
+    );
+
+    const newsCollaborators = [];
+    let isOldPerson = false;
+
+    collaboratorsImportat.forEach((a) => {
+      isOldPerson = collaboratorsContains.some((b) => {
+        return a.register === b.register;
+      });
+
+      if (!isOldPerson) newsCollaborators.push(a);
+    });
+
+    const newColabInserted = await this.collaboratorRepo.save(
+      newsCollaborators,
+    );
+
+    return this.handleInsertPeriodRequest(newColabInserted);
+  }
+
+  private handleInsertPeriodRequest(newColabInserted) {
+    if (newColabInserted.length) {
+      newColabInserted.forEach(async (a) => {
+        const colab = new Collaborator();
+        colab.id = a.id;
+
+        const vacationOk = new VacationRequest();
+
+        const startDate = moment(a.hiringdate).year(a.periodOk);
+        const finalDate = startDate.clone().add(29, 'day');
+
+        vacationOk.startDate = startDate.format('YYYY-MM-DD');
+        vacationOk.finalDate = finalDate.format('YYYY-MM-DD');
+        vacationOk.startPeriod = startDate.format('YYYY-MM-DD');
+        vacationOk.requestUser = colab;
+        vacationOk.cameImported = true;
+
+        if (a.daysEnjoyed > 0) {
+          const vacationNo = new VacationRequest();
+          const approvalVacationNo = new ApprovalVacation();
+          const startDateNo = moment(a.hiringdate).year(a.periodOk + 1);
+          const finalDateNo = startDateNo.clone().add(a.daysEnjoyed, 'day');
+
+          vacationNo.startDate = startDateNo.format('YYYY-MM-DD');
+          vacationNo.finalDate = finalDateNo.format('YYYY-MM-DD');
+          vacationNo.startPeriod = startDateNo.format('YYYY-MM-DD');
+          vacationNo.requestUser = colab;
+          vacationOk.cameImported = false;
+
+          const { id: idVacationNo } = await this.requestService.create(
+            vacationNo,
+          );
+
+          approvalVacationNo.status = RequestStatus.APPROVED;
+          approvalVacationNo.vacationRequest.id = idVacationNo;
+
+          this.requestService.createApprovationVacation(approvalVacationNo);
+        }
+      });
+    }
+
+    return newColabInserted;
+  }
+
+  private handleXlsx2Json(file: Buffer): Array<CollaboratorBulkDto> {
+    const worksheet = readXlsx(file, 'Modelo de Colaboradores', {
+      range: 9,
+    });
+
+    const data: Array<CollaboratorBulkDto> = worksheet
+      .filter((el: Array<any>) => el.length)
+      .map((el: CollaboratorBulkDto) => ({
+        register: el[0],
+        name: el[1],
+        email: el[2],
+        hiringDate: convertDateXlsx(el[3]),
+        periodOk: el[4],
+        daysEnjoyed: el[5],
+        useApplication: el[6],
+      }));
+
+    return data;
   }
 
   public async investigateCollaborator(id: string) {
